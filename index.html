@@ -1,987 +1,505 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Netball Shooting Skill Analyzer</title>
-  
-  <!-- Tailwind CSS CDN -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Netball Shooting Skill Analyzer (MediaPipe AI)</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Google Fonts Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- SheetJS CDN for Excel Generation -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              50: '#f0fdf4',
-              100: '#dcfce7',
-              500: '#22c55e',
-              600: '#16a34a',
-              700: '#15803d',
-              800: '#166534',
-              900: '#14532d',
-            },
-            netball: {
-              primary: '#0f172a',
-              accent: '#2563eb',
-              highlight: '#f59e0b',
-            }
-          }
-        }
-      }
-    }
-  </script>
-
+  <!-- SheetJS for Excel Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Google MediaPipe Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
   <style>
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #f1f5f9;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
-    
-    /* Processing Scanline overlay */
-    .scanline {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(34,197,94,0.2) 50%, rgba(255,255,255,0));
-      background-size: 100% 200%;
-      animation: scan 2s linear infinite;
-      pointer-events: none;
-    }
-    @keyframes scan {
-      0% { background-position: 0 -100%; }
-      100% { background-position: 0 100%; }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
     }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans pb-12">
 
-  <!-- Top Navigation / Branding -->
-  <header class="bg-slate-900 text-white shadow-md border-b border-slate-800 sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-3">
-      <div class="flex items-center space-x-3">
-        <div class="bg-blue-600 p-2 rounded-xl text-white shadow-lg shadow-blue-500/30">
-          <i class="fa-solid font-bold fa-basketball text-xl"></i>
-        </div>
-        <div>
-          <h1 class="font-bold text-lg leading-tight">Netball Shooting Skill Analyzer</h1>
-          <p class="text-xs text-slate-400">PE Teacher Assessment & Biomechanics Portal</p>
-        </div>
+  <!-- Header Section -->
+  <header class="bg-indigo-700 text-white shadow-lg mb-6 py-6 px-4">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold flex items-center gap-2">
+          <span>🏀</span> Netball Shooting Skill Analyzer
+        </h1>
+        <p class="text-indigo-200 text-sm mt-1">AI-Powered Pose Estimation & Technique Assessment</p>
       </div>
 
-      <!-- Quick Actions -->
-      <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
-        <button id="resetBtn" onclick="resetForm()" class="px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-all border border-slate-700 flex items-center gap-1.5">
-          <i class="fa-solid fa-rotate-left"></i> Reset Student
-        </button>
-        <button id="exportExcelBtn" onclick="exportToExcel()" class="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2">
-          <i class="fa-solid fa-file-excel text-sm"></i> Download Excel Report
-        </button>
+      <!-- Student Info Form -->
+      <div class="flex flex-wrap items-center gap-3 bg-indigo-800/60 p-3 rounded-lg border border-indigo-500/30">
+        <div>
+          <label class="block text-xs text-indigo-200 font-medium mb-1">Student Name</label>
+          <input type="text" id="studentName" placeholder="e.g. Jane Doe" 
+            class="px-3 py-1.5 rounded bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 w-40 md:w-48">
+        </div>
+        <div>
+          <label class="block text-xs text-indigo-200 font-medium mb-1">Class / Section</label>
+          <input type="text" id="studentClass" placeholder="e.g. Class 4B" 
+            class="px-3 py-1.5 rounded bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 w-28 md:w-32">
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- Student Info Input Banner -->
-  <section class="bg-white border-b border-slate-200 shadow-sm py-4 px-4 sm:px-6">
-    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-      <div class="md:col-span-3 flex items-center gap-2">
-        <i class="fa-solid fa-user-graduate text-slate-400 text-lg"></i>
-        <span class="font-semibold text-slate-700 text-sm">Student Information</span>
+  <!-- Main Content Layout -->
+  <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- LEFT COLUMN: Video Upload & AI Processing Canvas (7 cols) -->
+    <section class="lg:col-span-7 flex flex-col gap-4">
+      <div class="glass-card rounded-xl p-5 shadow-sm border border-slate-200">
+        <h2 class="text-lg font-bold text-slate-700 mb-3 flex items-center justify-between">
+          <span>1. Upload & View Shot Video</span>
+          <span id="aiStatusBadge" class="text-xs px-2.5 py-1 rounded-full bg-slate-200 text-slate-600 font-normal">AI Ready</span>
+        </h2>
+
+        <!-- File Input -->
+        <div class="mb-4">
+          <input type="file" id="videoInput" accept="video/*" class="block w-full text-sm text-slate-500
+            file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
+            file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700
+            hover:file:bg-indigo-100 cursor-pointer">
+        </div>
+
+        <!-- Video Player / Overlay Canvas container -->
+        <div class="relative aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center border border-slate-300 shadow-inner">
+          <video id="videoElement" class="hidden" playsinline></video>
+          <canvas id="outputCanvas" class="w-full h-full object-contain"></canvas>
+          
+          <div id="placeholderText" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+            <svg class="w-12 h-12 mb-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+            <p class="font-medium text-sm">No video uploaded yet</p>
+            <p class="text-xs text-slate-500 mt-1">Upload a student's netball shooting clip to begin analysis</p>
+          </div>
+        </div>
+
+        <!-- Progress Bar & AI Process Button -->
+        <div class="mt-4 flex flex-col gap-3">
+          <button id="processBtn" disabled class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg shadow transition flex items-center justify-center gap-2">
+            <span>✨ Run AI Pose & Feature Detection</span>
+          </button>
+          
+          <div id="progressContainer" class="hidden w-full">
+            <div class="flex justify-between text-xs text-slate-600 mb-1">
+              <span>Analyzing motion frame-by-frame...</span>
+              <span id="progressText">0%</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+              <div id="progressBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="md:col-span-9 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div>
-          <label class="block text-xs font-medium text-slate-500 mb-1">Student Name</label>
-          <input type="text" id="studentName" placeholder="e.g. Sarah Tan" class="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition" />
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-slate-500 mb-1">Class / Section</label>
-          <input type="text" id="studentClass" placeholder="e.g. Secondary 3-A" class="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition" />
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-slate-500 mb-1">Assessment Date</label>
-          <input type="date" id="assessmentDate" class="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition" />
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Main Grid Layout -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-      <!-- LEFT COLUMN: Video Upload & Player (5 cols) -->
-      <section class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 flex flex-col gap-4">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h2 class="font-bold text-slate-800 text-base flex items-center gap-2">
-            <i class="fa-solid fa-video text-blue-600"></i> Video Analysis
-          </h2>
-          <span id="videoStatusBadge" class="text-xs font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">No Video Uploaded</span>
+    <!-- RIGHT COLUMN: Netball Checklist & Scoring (5 cols) -->
+    <section class="lg:col-span-5 flex flex-col gap-4">
+      <div class="glass-card rounded-xl p-5 shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between mb-4 border-b pb-3">
+          <h2 class="text-lg font-bold text-slate-800">2. Netball Skill Checklist</h2>
+          <button id="exportBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-3 py-1.5 rounded shadow flex items-center gap-1.5 transition">
+            <span>📥 Export Excel</span>
+          </button>
         </div>
 
-        <!-- Upload Zone -->
-        <div id="uploadContainer" class="border-2 border-dashed border-slate-300 hover:border-blue-500 transition-colors rounded-xl p-6 text-center cursor-pointer bg-slate-50/50 hover:bg-blue-50/30 flex flex-col items-center justify-center min-h-[220px]" onclick="document.getElementById('videoFileInput').click()">
-          <input type="file" id="videoFileInput" accept="video/mp4,video/webm,video/quicktime,video/mov" class="hidden" onchange="handleVideoUpload(event)">
-          <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3">
-            <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
-          </div>
-          <p class="font-medium text-slate-700 text-sm">Click to upload netball shot video</p>
-          <p class="text-xs text-slate-400 mt-1">Supports MP4, WebM, MOV files</p>
-          <button type="button" class="mt-4 px-4 py-1.5 bg-white border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold shadow-sm hover:bg-slate-50 transition">Browse Files</button>
-        </div>
+        <p class="text-xs text-slate-500 mb-4">
+          Features automatically evaluated by MediaPipe AI joint tracking. You can also manually toggle or rate score (1-5).
+        </p>
 
-        <!-- Video Player Display (Hidden initially) -->
-        <div id="playerContainer" class="hidden flex flex-col gap-3">
-          <div class="relative bg-black rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center group shadow-inner">
-            <video id="netballVideo" class="w-full h-full object-contain" playsinline></video>
-            
-            <!-- Canvas Overlay for Motion Analysis Visual Effects -->
-            <canvas id="analysisCanvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
-
-            <!-- Scanning overlay line during AI detection -->
-            <div id="scanlineOverlay" class="scanline hidden"></div>
-
-            <!-- Overlay Status Badge -->
-            <div id="aiOverlayText" class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-lg border border-white/10 hidden items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              <span id="aiProgressMsg">Analyzing pose...</span>
-            </div>
-          </div>
-
-          <!-- Video Custom Controls -->
-          <div class="bg-slate-100 p-2.5 rounded-xl flex flex-col gap-2">
-            <!-- Timeline seeker -->
-            <div class="flex items-center gap-2">
-              <span id="currentTimeDisplay" class="text-[11px] font-mono text-slate-500 w-8 text-right">0:00</span>
-              <input type="range" id="seekBar" value="0" min="0" max="100" class="w-full h-1.5 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="seekVideo(this.value)">
-              <span id="durationDisplay" class="text-[11px] font-mono text-slate-500 w-8">0:00</span>
-            </div>
-
-            <!-- Buttons bar -->
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-1">
-                <button onclick="togglePlay()" class="p-2 w-8 h-8 flex items-center justify-center bg-white rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm text-xs">
-                  <i id="playIcon" class="fa-solid fa-play"></i>
-                </button>
-                <button onclick="stepFrame(-0.1)" title="Step Back 0.1s" class="p-2 w-8 h-8 flex items-center justify-center bg-white rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm text-xs">
-                  <i class="fa-solid fa-backward-step"></i>
-                </button>
-                <button onclick="stepFrame(0.1)" title="Step Forward 0.1s" class="p-2 w-8 h-8 flex items-center justify-center bg-white rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm text-xs">
-                  <i class="fa-solid fa-forward-step"></i>
-                </button>
-                <button id="slowMoBtn" onclick="toggleSlowMo()" class="px-2 py-1 bg-white rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm text-[11px] font-semibold">
-                  1.0x
-                </button>
-              </div>
-
-              <label class="cursor-pointer text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i> Change Video
-                <input type="file" accept="video/mp4,video/webm,video/quicktime,video/mov" class="hidden" onchange="handleVideoUpload(event)">
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Analyze Button -->
-        <button id="analyzeBtn" onclick="runAnalysis()" disabled class="w-full py-3 px-4 bg-slate-300 text-slate-500 font-bold rounded-xl shadow-none flex items-center justify-center gap-2 cursor-not-allowed transition-all">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Shooting Technique
-        </button>
-
-        <!-- Progress Indicator Bar -->
-        <div id="progressBox" class="hidden flex-col gap-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200">
-          <div class="flex justify-between text-xs font-medium text-slate-600">
-            <span id="analysisStepText">Initializing AI Motion Detection...</span>
-            <span id="analysisPercentText">0%</span>
-          </div>
-          <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-            <div id="progressBar" class="bg-blue-600 h-full w-0 transition-all duration-300"></div>
-          </div>
-        </div>
-
-        <!-- Overall Summary & Coaching Remarks -->
-        <div id="summaryCard" class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-xl p-4 shadow-md flex flex-col gap-3">
-          <div class="flex justify-between items-center border-b border-slate-700/60 pb-2">
-            <span class="text-xs font-semibold text-slate-300 tracking-wider uppercase">Performance Score</span>
-            <span id="totalScoreBadge" class="text-lg font-black text-emerald-400">-- / 30</span>
-          </div>
-          <div>
-            <span class="text-xs font-medium text-slate-400 block mb-1">Teacher / AI Feedback Summary:</span>
-            <p id="coachingSummaryText" class="text-xs leading-relaxed text-slate-200">
-              Upload a video or fill in the criteria checklist to calculate the student's technical score and generate tailored coaching tips.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- RIGHT COLUMN: Official Netball Checklist Criteria (7 cols) -->
-      <section class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 flex flex-col gap-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
-          <div>
-            <h2 class="font-bold text-slate-800 text-base flex items-center gap-2">
-              <i class="fa-solid fa-clipboard-check text-emerald-600"></i> Netball Shooting Checklist
-            </h2>
-            <p class="text-xs text-slate-500">Automated evaluation with manual override option</p>
-          </div>
-          <div class="flex items-center gap-3 text-xs font-semibold">
-            <span class="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-              <i class="fa-solid fa-circle-check"></i> Present (✓)
-            </span>
-            <span class="flex items-center gap-1 text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
-              <i class="fa-solid fa-circle-xmark"></i> Absent (✗)
-            </span>
-          </div>
-        </div>
-
-        <!-- Checklist Stages Container -->
-        <div class="flex flex-col gap-6">
+        <!-- Checklist Items Container -->
+        <div class="space-y-4 max-h-[600px] overflow-y-auto pr-1">
 
           <!-- STAGE 1 -->
-          <div class="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
-            <div class="bg-slate-100/80 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
-              <span class="font-bold text-xs uppercase tracking-wide text-slate-700 flex items-center gap-2">
-                <span class="w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-[10px]">1</span>
-                Stage 1: Base & Stance
-              </span>
-            </div>
-            
-            <div class="divide-y divide-slate-100 bg-white">
-              <!-- Item 1 -->
-              <div class="p-3.5 sm:p-4 flex flex-col gap-3" id="itemCard-1">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div class="flex items-start gap-2.5">
-                    <button type="button" onclick="togglePresence(1)" id="statusBadge-1" class="mt-0.5 shrink-0 w-7 h-7 rounded-lg bg-slate-100 border border-slate-300 text-slate-400 flex items-center justify-center font-bold text-sm transition-all">
-                      ?
-                    </button>
-                    <div>
-                      <h4 class="text-xs sm:text-sm font-semibold text-slate-800">Feet shoulder width apart</h4>
-                      <p class="text-[11px] text-slate-500">Stable, balanced base pointing toward the goalpost.</p>
-                    </div>
-                  </div>
-
-                  <!-- Score Rating 1 to 5 -->
-                  <div class="flex items-center gap-1 self-end sm:self-center bg-slate-50 p-1 rounded-lg border border-slate-200">
-                    <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Score:</span>
-                    <template id="ratingButtonsTemplate">
-                      <!-- Rendered by JS -->
-                    </template>
-                    <div class="flex gap-1" id="ratingContainer-1"></div>
-                  </div>
-                </div>
-
-                <!-- Feedback hint for improvement -->
-                <div id="tipBox-1" class="hidden text-[11px] bg-amber-50 text-amber-800 border border-amber-200/60 p-2 rounded-lg items-center gap-2">
-                  <i class="fa-solid fa-lightbulb text-amber-500 shrink-0"></i>
-                  <span id="tipText-1">Widen feet stance to match shoulder width for better balance before bending knees.</span>
-                </div>
+          <div class="border rounded-lg p-3 bg-slate-50">
+            <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider block mb-2">Stage 1: Preparation</span>
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-slate-800">Feet shoulder width apart</p>
+                <span id="s1_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
+              </div>
+              <div class="flex flex-col items-end gap-1">
+                <button onclick="toggleFeature('item_s1')" id="btn_item_s1" class="px-2.5 py-1 text-xs font-bold rounded border bg-white text-slate-600 hover:bg-slate-100">❓ Unchecked</button>
+                <select id="score_item_s1" class="text-xs border rounded px-1.5 py-0.5 bg-white">
+                  <option value="5">Score: 5</option>
+                  <option value="4">Score: 4</option>
+                  <option value="3" selected>Score: 3</option>
+                  <option value="2">Score: 2</option>
+                  <option value="1">Score: 1</option>
+                </select>
               </div>
             </div>
           </div>
 
           <!-- STAGE 2 -->
-          <div class="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
-            <div class="bg-slate-100/80 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
-              <span class="font-bold text-xs uppercase tracking-wide text-slate-700 flex items-center gap-2">
-                <span class="w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-[10px]">2</span>
-                Stage 2: Preparation & Ball Positioning
-              </span>
+          <div class="border rounded-lg p-3 bg-slate-50 space-y-3">
+            <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider block">Stage 2: Setup & Ball Holding</span>
+            
+            <!-- Feature 2.1 -->
+            <div class="flex items-start justify-between gap-3 border-b pb-2">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-slate-800">Non-shooting hand on side & shooting hand under ball</p>
+                <span id="s2_1_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
+              </div>
+              <div class="flex flex-col items-end gap-1">
+                <button onclick="toggleFeature('item_s2_1')" id="btn_item_s2_1" class="px-2.5 py-1 text-xs font-bold rounded border bg-white text-slate-600 hover:bg-slate-100">❓ Unchecked</button>
+                <select id="score_item_s2_1" class="text-xs border rounded px-1.5 py-0.5 bg-white">
+                  <option value="5">Score: 5</option>
+                  <option value="4">Score: 4</option>
+                  <option value="3" selected>Score: 3</option>
+                  <option value="2">Score: 2</option>
+                  <option value="1">Score: 1</option>
+                </select>
+              </div>
             </div>
 
-            <div class="divide-y divide-slate-100 bg-white">
-              <!-- Item 2 -->
-              <div class="p-3.5 sm:p-4 flex flex-col gap-3" id="itemCard-2">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div class="flex items-start gap-2.5">
-                    <button type="button" onclick="togglePresence(2)" id="statusBadge-2" class="mt-0.5 shrink-0 w-7 h-7 rounded-lg bg-slate-100 border border-slate-300 text-slate-400 flex items-center justify-center font-bold text-sm transition-all">
-                      ?
-                    </button>
-                    <div>
-                      <h4 class="text-xs sm:text-sm font-semibold text-slate-800">Non-shooting hand on side, shooting hand under ball</h4>
-                      <p class="text-[11px] text-slate-500">Shooting hand under the ball for propulsion; non-shooting hand steadies side.</p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center gap-1 self-end sm:self-center bg-slate-50 p-1 rounded-lg border border-slate-200">
-                    <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Score:</span>
-                    <div class="flex gap-1" id="ratingContainer-2"></div>
-                  </div>
-                </div>
-
-                <div id="tipBox-2" class="hidden text-[11px] bg-amber-50 text-amber-800 border border-amber-200/60 p-2 rounded-lg items-center gap-2">
-                  <i class="fa-solid fa-lightbulb text-amber-500 shrink-0"></i>
-                  <span id="tipText-2">Reposition shooting hand directly beneath the ball rather than holding it from the side.</span>
-                </div>
+            <!-- Feature 2.2 -->
+            <div class="flex items-start justify-between gap-3 border-b pb-2">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-slate-800">Fingers open, ball resting high above head</p>
+                <span id="s2_2_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
               </div>
-
-              <!-- Item 3 -->
-              <div class="p-3.5 sm:p-4 flex flex-col gap-3" id="itemCard-3">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div class="flex items-start gap-2.5">
-                    <button type="button" onclick="togglePresence(3)" id="statusBadge-3" class="mt-0.5 shrink-0 w-7 h-7 rounded-lg bg-slate-100 border border-slate-300 text-slate-400 flex items-center justify-center font-bold text-sm transition-all">
-                      ?
-                    </button>
-                    <div>
-                      <h4 class="text-xs sm:text-sm font-semibold text-slate-800">Fingers slightly open, ball resting high above head</h4>
-                      <p class="text-[11px] text-slate-500">Rest on fingertips (not flat palm) high above forehead.</p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center gap-1 self-end sm:self-center bg-slate-50 p-1 rounded-lg border border-slate-200">
-                    <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Score:</span>
-                    <div class="flex gap-1" id="ratingContainer-3"></div>
-                  </div>
-                </div>
-
-                <div id="tipBox-3" class="hidden text-[11px] bg-amber-50 text-amber-800 border border-amber-200/60 p-2 rounded-lg items-center gap-2">
-                  <i class="fa-solid fa-lightbulb text-amber-500 shrink-0"></i>
-                  <span id="tipText-3">Spread fingers naturally to form a stable base and avoid resting ball flat on palm.</span>
-                </div>
+              <div class="flex flex-col items-end gap-1">
+                <button onclick="toggleFeature('item_s2_2')" id="btn_item_s2_2" class="px-2.5 py-1 text-xs font-bold rounded border bg-white text-slate-600 hover:bg-slate-100">❓ Unchecked</button>
+                <select id="score_item_s2_2" class="text-xs border rounded px-1.5 py-0.5 bg-white">
+                  <option value="5">Score: 5</option>
+                  <option value="4">Score: 4</option>
+                  <option value="3" selected>Score: 3</option>
+                  <option value="2">Score: 2</option>
+                  <option value="1">Score: 1</option>
+                </select>
               </div>
+            </div>
 
-              <!-- Item 4 -->
-              <div class="p-3.5 sm:p-4 flex flex-col gap-3" id="itemCard-4">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div class="flex items-start gap-2.5">
-                    <button type="button" onclick="togglePresence(4)" id="statusBadge-4" class="mt-0.5 shrink-0 w-7 h-7 rounded-lg bg-slate-100 border border-slate-300 text-slate-400 flex items-center justify-center font-bold text-sm transition-all">
-                      ?
-                    </button>
-                    <div>
-                      <h4 class="text-xs sm:text-sm font-semibold text-slate-800">Shooting arm elbow at right angle pointing to net</h4>
-                      <p class="text-[11px] text-slate-500">90-degree bend in elbow aligned directly towards the target ring.</p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center gap-1 self-end sm:self-center bg-slate-50 p-1 rounded-lg border border-slate-200">
-                    <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Score:</span>
-                    <div class="flex gap-1" id="ratingContainer-4"></div>
-                  </div>
-                </div>
-
-                <div id="tipBox-4" class="hidden text-[11px] bg-amber-50 text-amber-800 border border-amber-200/60 p-2 rounded-lg items-center gap-2">
-                  <i class="fa-solid fa-lightbulb text-amber-500 shrink-0"></i>
-                  <span id="tipText-4">Tuck elbow inward so it points straight at the net rather than flaring outwards.</span>
-                </div>
+            <!-- Feature 2.3 -->
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-slate-800">Shooting arm elbow at right angle towards net</p>
+                <span id="s2_3_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
+              </div>
+              <div class="flex flex-col items-end gap-1">
+                <button onclick="toggleFeature('item_s2_3')" id="btn_item_s2_3" class="px-2.5 py-1 text-xs font-bold rounded border bg-white text-slate-600 hover:bg-slate-100">❓ Unchecked</button>
+                <select id="score_item_s2_3" class="text-xs border rounded px-1.5 py-0.5 bg-white">
+                  <option value="5">Score: 5</option>
+                  <option value="4">Score: 4</option>
+                  <option value="3" selected>Score: 3</option>
+                  <option value="2">Score: 2</option>
+                  <option value="1">Score: 1</option>
+                </select>
               </div>
             </div>
           </div>
 
           <!-- STAGE 3 -->
-          <div class="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
-            <div class="bg-slate-100/80 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
-              <span class="font-bold text-xs uppercase tracking-wide text-slate-700 flex items-center gap-2">
-                <span class="w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-[10px]">3</span>
-                Stage 3: Execution & Follow-Through
-              </span>
+          <div class="border rounded-lg p-3 bg-slate-50 space-y-3">
+            <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider block">Stage 3: Execution & Follow Through</span>
+            
+            <!-- Feature 3.1 -->
+            <div class="flex items-start justify-between gap-3 border-b pb-2">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-slate-800">Bend knees and straighten arm when shooting</p>
+                <span id="s3_1_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
+              </div>
+              <div class="flex flex-col items-end gap-1">
+                <button onclick="toggleFeature('item_s3_1')" id="btn_item_s3_1" class="px-2.5 py-1 text-xs font-bold rounded border bg-white text-slate-600 hover:bg-slate-100">❓ Unchecked</button>
+                <select id="score_item_s3_1" class="text-xs border rounded px-1.5 py-0.5 bg-white">
+                  <option value="5">Score: 5</option>
+                  <option value="4">Score: 4</option>
+                  <option value="3" selected>Score: 3</option>
+                  <option value="2">Score: 2</option>
+                  <option value="1">Score: 1</option>
+                </select>
+              </div>
             </div>
 
-            <div class="divide-y divide-slate-100 bg-white">
-              <!-- Item 5 -->
-              <div class="p-3.5 sm:p-4 flex flex-col gap-3" id="itemCard-5">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div class="flex items-start gap-2.5">
-                    <button type="button" onclick="togglePresence(5)" id="statusBadge-5" class="mt-0.5 shrink-0 w-7 h-7 rounded-lg bg-slate-100 border border-slate-300 text-slate-400 flex items-center justify-center font-bold text-sm transition-all">
-                      ?
-                    </button>
-                    <div>
-                      <h4 class="text-xs sm:text-sm font-semibold text-slate-800">Bend knees and extend/straighten arm smoothly</h4>
-                      <p class="text-[11px] text-slate-500">Fluid upward transfer of power from lower legs through arm extension.</p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center gap-1 self-end sm:self-center bg-slate-50 p-1 rounded-lg border border-slate-200">
-                    <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Score:</span>
-                    <div class="flex gap-1" id="ratingContainer-5"></div>
-                  </div>
-                </div>
-
-                <div id="tipBox-5" class="hidden text-[11px] bg-amber-50 text-amber-800 border border-amber-200/60 p-2 rounded-lg items-center gap-2">
-                  <i class="fa-solid fa-lightbulb text-amber-500 shrink-0"></i>
-                  <span id="tipText-5">Ensure knees flex before release to generate vertical arc instead of relying solely on arm strength.</span>
-                </div>
+            <!-- Feature 3.2 -->
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-slate-800">Flick wrist on follow through</p>
+                <span id="s3_2_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
               </div>
-
-              <!-- Item 6 -->
-              <div class="p-3.5 sm:p-4 flex flex-col gap-3" id="itemCard-6">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div class="flex items-start gap-2.5">
-                    <button type="button" onclick="togglePresence(6)" id="statusBadge-6" class="mt-0.5 shrink-0 w-7 h-7 rounded-lg bg-slate-100 border border-slate-300 text-slate-400 flex items-center justify-center font-bold text-sm transition-all">
-                      ?
-                    </button>
-                    <div>
-                      <h4 class="text-xs sm:text-sm font-semibold text-slate-800">Flick wrist on follow through</h4>
-                      <p class="text-[11px] text-slate-500">Complete wrist snap downwards ("goose neck") to create backspin.</p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center gap-1 self-end sm:self-center bg-slate-50 p-1 rounded-lg border border-slate-200">
-                    <span class="text-[10px] text-slate-400 font-bold uppercase mr-1">Score:</span>
-                    <div class="flex gap-1" id="ratingContainer-6"></div>
-                  </div>
-                </div>
-
-                <div id="tipBox-6" class="hidden text-[11px] bg-amber-50 text-amber-800 border border-amber-200/60 p-2 rounded-lg items-center gap-2">
-                  <i class="fa-solid fa-lightbulb text-amber-500 shrink-0"></i>
-                  <span id="tipText-6">Finish with a high release and distinct wrist flick downwards toward the ring for backspin.</span>
-                </div>
+              <div class="flex flex-col items-end gap-1">
+                <button onclick="toggleFeature('item_s3_2')" id="btn_item_s3_2" class="px-2.5 py-1 text-xs font-bold rounded border bg-white text-slate-600 hover:bg-slate-100">❓ Unchecked</button>
+                <select id="score_item_s3_2" class="text-xs border rounded px-1.5 py-0.5 bg-white">
+                  <option value="5">Score: 5</option>
+                  <option value="4">Score: 4</option>
+                  <option value="3" selected>Score: 3</option>
+                  <option value="2">Score: 2</option>
+                  <option value="1">Score: 1</option>
+                </select>
               </div>
-
             </div>
           </div>
 
         </div>
-      </section>
+      </div>
+    </section>
 
-    </div>
   </main>
 
-  <!-- Notification Toast -->
-  <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 hidden items-center gap-3 z-50 transition-all transform translate-y-4">
-    <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
-    <span id="toastMsg" class="text-xs font-medium">Notification message</span>
-  </div>
-
   <script>
-    // Data Structure for criteria checklist
-    const criteriaData = [
-      {
-        id: 1,
-        stage: 1,
-        stageTitle: "Stage 1: Base & Stance",
-        feature: "Feet shoulder width apart",
-        present: null, // true (Present), false (Absent), null (Unset)
-        score: 0,
-        coachingTip: "Widen feet stance to match shoulder width for better stability before bending knees."
-      },
-      {
-        id: 2,
-        stage: 2,
-        stageTitle: "Stage 2: Preparation & Ball Positioning",
-        feature: "Non-shooting hand on side, shooting hand under ball",
-        present: null,
-        score: 0,
-        coachingTip: "Reposition shooting hand directly beneath the ball rather than holding it from the side."
-      },
-      {
-        id: 3,
-        stage: 2,
-        stageTitle: "Stage 2: Preparation & Ball Positioning",
-        feature: "Fingers slightly open, ball resting high above head",
-        present: null,
-        score: 0,
-        coachingTip: "Spread fingers naturally to form a stable cup and avoid resting ball flat on palm."
-      },
-      {
-        id: 4,
-        stage: 2,
-        stageTitle: "Stage 2: Preparation & Ball Positioning",
-        feature: "Shooting arm elbow at right angle pointing to net",
-        present: null,
-        score: 0,
-        coachingTip: "Tuck elbow inward so it points straight at the net rather than flaring outwards."
-      },
-      {
-        id: 5,
-        stage: 3,
-        stageTitle: "Stage 3: Execution & Follow-Through",
-        feature: "When shooting, bend knees and straighten arm",
-        present: null,
-        score: 0,
-        coachingTip: "Ensure knees flex before release to generate vertical arc instead of relying solely on arm strength."
-      },
-      {
-        id: 6,
-        stage: 3,
-        stageTitle: "Stage 3: Execution & Follow-Through",
-        feature: "Flick wrist on follow through",
-        present: null,
-        score: 0,
-        coachingTip: "Finish with a high release and distinct wrist flick downwards toward the ring for backspin."
-      }
-    ];
+    // State management for checklist features
+    const featureStates = {
+      item_s1: false,
+      item_s2_1: false,
+      item_s2_2: false,
+      item_s2_3: false,
+      item_s3_1: false,
+      item_s3_2: false
+    };
 
-    // Initialize Page
-    document.addEventListener('DOMContentLoaded', () => {
-      // Set default date to today
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('assessmentDate').value = today;
+    const videoInput = document.getElementById('videoInput');
+    const videoElement = document.getElementById('videoElement');
+    const outputCanvas = document.getElementById('outputCanvas');
+    const canvasCtx = outputCanvas.getContext('2d');
+    const processBtn = document.getElementById('processBtn');
+    const placeholderText = document.getElementById('placeholderText');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
 
-      // Render 1-5 rating buttons for each item
-      criteriaData.forEach(item => {
-        renderRatingButtons(item.id);
+    let poseDetector;
+
+    // Initialize MediaPipe Pose
+    function initMediaPipe() {
+      poseDetector = new Pose({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+      });
+      poseDetector.setOptions({
+        modelComplexity: 1,
+        smoothLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
       });
 
-      updateScoreSummary();
-    });
-
-    // Render 1-5 score buttons dynamically
-    function renderRatingButtons(itemId) {
-      const container = document.getElementById(`ratingContainer-${itemId}`);
-      container.innerHTML = '';
-      
-      for (let rating = 1; rating <= 5; rating++) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = `w-6 h-6 rounded text-xs font-bold transition-all border ${
-          criteriaData[itemId - 1].score === rating
-            ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
-        }`;
-        btn.innerText = rating;
-        btn.onclick = () => setRating(itemId, rating);
-        container.appendChild(btn);
-      }
+      poseDetector.onResults(onPoseResults);
     }
+    initMediaPipe();
 
-    // Toggle Present (✓) / Absent (✗) status
-    function togglePresence(itemId) {
-      const item = criteriaData[itemId - 1];
-      
-      if (item.present === true) {
-        item.present = false;
-        if (item.score > 2) item.score = 2; // Default to lower score if marked absent
-      } else if (item.present === false) {
-        item.present = null;
-        item.score = 0;
+    // Toggle checklist manually
+    function toggleFeature(id, forceState = null) {
+      if (forceState !== null) {
+        featureStates[id] = forceState;
       } else {
-        item.present = true;
-        if (item.score === 0) item.score = 5; // Default high score if present
+        featureStates[id] = !featureStates[id];
       }
 
-      updateItemUI(itemId);
-      updateScoreSummary();
-    }
-
-    // Set rating explicitly (1-5)
-    function setRating(itemId, rating) {
-      const item = criteriaData[itemId - 1];
-      item.score = rating;
-
-      // Auto set present status based on rating if not set or contradictory
-      if (rating >= 3) {
-        item.present = true;
+      const btn = document.getElementById(`btn_${id}`);
+      if (featureStates[id]) {
+        btn.className = 'px-2.5 py-1 text-xs font-bold rounded bg-emerald-100 text-emerald-800 border border-emerald-300';
+        btn.innerHTML = '✅ Present';
       } else {
-        item.present = false;
-      }
-
-      updateItemUI(itemId);
-      updateScoreSummary();
-    }
-
-    // Update single item visual UI state
-    function updateItemUI(itemId) {
-      const item = criteriaData[itemId - 1];
-      const badge = document.getElementById(`statusBadge-${itemId}`);
-      const tipBox = document.getElementById(`tipBox-${itemId}`);
-
-      renderRatingButtons(itemId);
-
-      if (item.present === true) {
-        badge.className = "mt-0.5 shrink-0 w-7 h-7 rounded-lg bg-emerald-500 text-white font-bold text-sm flex items-center justify-center shadow-sm transition-all";
-        badge.innerHTML = '<i class="fa-solid fa-check"></i>';
-        tipBox.classList.add('hidden');
-        tipBox.classList.remove('flex');
-      } else if (item.present === false) {
-        badge.className = "mt-0.5 shrink-0 w-7 h-7 rounded-lg bg-rose-500 text-white font-bold text-sm flex items-center justify-center shadow-sm transition-all";
-        badge.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-        tipBox.classList.remove('hidden');
-        tipBox.classList.add('flex');
-      } else {
-        badge.className = "mt-0.5 shrink-0 w-7 h-7 rounded-lg bg-slate-100 border border-slate-300 text-slate-400 font-bold text-sm flex items-center justify-center transition-all";
-        badge.innerHTML = '?';
-        tipBox.classList.add('hidden');
-        tipBox.classList.remove('flex');
+        btn.className = 'px-2.5 py-1 text-xs font-bold rounded bg-rose-100 text-rose-800 border border-rose-300';
+        btn.innerHTML = '❌ Absent';
       }
     }
 
-    // Calculate overall score & coaching narrative
-    function updateScoreSummary() {
-      let total = 0;
-      let evaluatedCount = 0;
-      let absentItems = [];
-
-      criteriaData.forEach(item => {
-        total += item.score;
-        if (item.present !== null) evaluatedCount++;
-        if (item.present === false) absentItems.push(item);
-      });
-
-      document.getElementById('totalScoreBadge').innerText = `${total} / 30`;
-
-      const summaryText = document.getElementById('coachingSummaryText');
-
-      if (evaluatedCount === 0) {
-        summaryText.innerText = "Upload a video or fill in the criteria checklist to calculate the student's technical score and generate tailored coaching tips.";
-        return;
-      }
-
-      let narrative = `Student achieved ${total}/30 points (${Math.round((total / 30) * 100)}%). `;
-
-      if (total >= 25) {
-        narrative += "Excellent shooting form! Demonstrates strong kinetic chain alignment, proper hand positioning, and follow-through.";
-      } else if (total >= 18) {
-        narrative += "Good overall execution with steady base support. Minor refinements needed on upper body positioning or wrist release.";
-      } else {
-        narrative += "Fundamental technique needs improvement. Focus on establishing a shoulder-width base and tucked elbow alignment.";
-      }
-
-      if (absentItems.length > 0) {
-        narrative += " Priority Areas to Focus: " + absentItems.map(i => i.feature.toLowerCase()).join("; ") + ".";
-      }
-
-      summaryText.innerText = narrative;
-    }
-
-    // Video Upload Handler
-    function handleVideoUpload(event) {
-      const file = event.target.files[0];
+    // Video Upload Event
+    videoInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
       if (!file) return;
 
-      const video = document.getElementById('netballVideo');
-      const uploadContainer = document.getElementById('uploadContainer');
-      const playerContainer = document.getElementById('playerContainer');
-      const analyzeBtn = document.getElementById('analyzeBtn');
-      const videoStatusBadge = document.getElementById('videoStatusBadge');
+      const url = URL.createObjectURL(file);
+      videoElement.src = url;
+      placeholderText.classList.add('hidden');
+      processBtn.disabled = false;
 
-      const fileURL = URL.createObjectURL(file);
-      video.src = fileURL;
-
-      uploadContainer.classList.add('hidden');
-      playerContainer.classList.remove('hidden');
-      
-      analyzeBtn.disabled = false;
-      analyzeBtn.className = "w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all";
-
-      videoStatusBadge.innerText = file.name.length > 20 ? file.name.substring(0, 18) + '...' : file.name;
-      videoStatusBadge.className = "text-xs font-medium px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200";
-
-      video.onloadedmetadata = () => {
-        document.getElementById('durationDisplay').innerText = formatTime(video.duration);
+      videoElement.onloadedmetadata = () => {
+        outputCanvas.width = videoElement.videoWidth;
+        outputCanvas.height = videoElement.videoHeight;
+        // Render first frame preview
+        videoElement.currentTime = 0;
       };
+    });
 
-      video.ontimeupdate = () => {
-        const seekBar = document.getElementById('seekBar');
-        if (video.duration) {
-          seekBar.value = (video.currentTime / video.duration) * 100;
-          document.getElementById('currentTimeDisplay').innerText = formatTime(video.currentTime);
+    videoElement.addEventListener('seeked', () => {
+      canvasCtx.drawImage(videoElement, 0, 0, outputCanvas.width, outputCanvas.height);
+    });
+
+    // Angle calculation helper
+    function calculateAngle(A, B, C) {
+      const rad = Math.atan2(C.y - B.y, C.x - B.x) - Math.atan2(A.y - B.y, A.x - B.x);
+      let angle = Math.abs((rad * 180.0) / Math.PI);
+      if (angle > 180.0) angle = 360 - angle;
+      return angle;
+    }
+
+    // Motion metric trackers during video scan
+    let detectedMetrics = {
+      feetWidthRatioMax: 0,
+      minElbowAngle: 180,
+      maxHandHeightRatio: 0,
+      kneeBendDetected: false,
+      elbowExtensionMax: 0,
+      wristFlickAngleMax: 0
+    };
+
+    function onPoseResults(results) {
+      canvasCtx.save();
+      canvasCtx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+      canvasCtx.drawImage(results.image, 0, 0, outputCanvas.width, outputCanvas.height);
+
+      if (results.poseLandmarks) {
+        // Draw MediaPipe Skeleton
+        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#6366F1', lineWidth: 3 });
+        drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#10B981', lineWidth: 1, radius: 3 });
+
+        const lm = results.poseLandmarks;
+        // Key landmark indices
+        const lShoulder = lm[11], rShoulder = lm[12];
+        const lElbow = lm[13], rElbow = lm[14];
+        const lWrist = lm[15], rWrist = lm[16];
+        const lAnkle = lm[27], rAnkle = lm[28];
+        const lKnee = lm[25], rKnee = lm[26];
+        const lHip = lm[23], rHip = lm[24];
+
+        // 1. Feet Width Check
+        const shoulderDist = Math.hypot(rShoulder.x - lShoulder.x, rShoulder.y - lShoulder.y);
+        const feetDist = Math.hypot(rAnkle.x - lAnkle.x, rAnkle.y - lAnkle.y);
+        if (shoulderDist > 0) {
+          const ratio = feetDist / shoulderDist;
+          if (ratio > detectedMetrics.feetWidthRatioMax) detectedMetrics.feetWidthRatioMax = ratio;
         }
+
+        // 2. Elbow Angle
+        const rightElbowAngle = calculateAngle(rShoulder, rElbow, rWrist);
+        const leftElbowAngle = calculateAngle(lShoulder, lElbow, lWrist);
+        const shootingElbowAngle = Math.min(rightElbowAngle, leftElbowAngle);
+        if (shootingElbowAngle < detectedMetrics.minElbowAngle) detectedMetrics.minElbowAngle = shootingElbowAngle;
+
+        // 3. Ball above head (Wrists above eyes/ears)
+        const avgWristY = (lWrist.y + rWrist.y) / 2;
+        const avgNoseY = lm[0].y;
+        if (avgNoseY - avgWristY > detectedMetrics.maxHandHeightRatio) {
+          detectedMetrics.maxHandHeightRatio = avgNoseY - avgWristY;
+        }
+
+        // 4. Knee Bend & Extension
+        const rKneeAngle = calculateAngle(rHip, rKnee, rAnkle);
+        if (rKneeAngle < 155) detectedMetrics.kneeBendDetected = true;
+
+        const maxArmExt = Math.max(rightElbowAngle, leftElbowAngle);
+        if (maxArmExt > detectedMetrics.elbowExtensionMax) detectedMetrics.elbowExtensionMax = maxArmExt;
+      }
+      canvasCtx.restore();
+    }
+
+    // Process Video Frame-by-Frame
+    processBtn.addEventListener('click', async () => {
+      if (!videoElement.src) return;
+
+      processBtn.disabled = true;
+      progressContainer.classList.remove('hidden');
+
+      // Reset metrics
+      detectedMetrics = {
+        feetWidthRatioMax: 0,
+        minElbowAngle: 180,
+        maxHandHeightRatio: -1,
+        kneeBendDetected: false,
+        elbowExtensionMax: 0,
+        wristFlickAngleMax: 0
       };
 
-      showToast('Video successfully loaded!', 'success');
-    }
+      const duration = videoElement.duration;
+      const step = 0.1; // Frame sampling step in seconds
+      let currentTime = 0;
 
-    // Video Playback Helper Functions
-    function togglePlay() {
-      const video = document.getElementById('netballVideo');
-      const playIcon = document.getElementById('playIcon');
-      if (video.paused) {
-        video.play();
-        playIcon.className = "fa-solid fa-pause";
-      } else {
-        video.pause();
-        playIcon.className = "fa-solid fa-play";
-      }
-    }
-
-    function seekVideo(val) {
-      const video = document.getElementById('netballVideo');
-      if (video.duration) {
-        video.currentTime = (val / 100) * video.duration;
-      }
-    }
-
-    function stepFrame(time) {
-      const video = document.getElementById('netballVideo');
-      video.pause();
-      document.getElementById('playIcon').className = "fa-solid fa-play";
-      video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + time));
-    }
-
-    function toggleSlowMo() {
-      const video = document.getElementById('netballVideo');
-      const btn = document.getElementById('slowMoBtn');
-      if (video.playbackRate === 1.0) {
-        video.playbackRate = 0.5;
-        btn.innerText = "0.5x";
-        btn.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-300');
-      } else {
-        video.playbackRate = 1.0;
-        btn.innerText = "1.0x";
-        btn.classList.remove('bg-blue-50', 'text-blue-600', 'border-blue-300');
-      }
-    }
-
-    function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-    }
-
-    // Simulated Automated Pose / Feature Analysis
-    function runAnalysis() {
-      const video = document.getElementById('netballVideo');
-      const analyzeBtn = document.getElementById('analyzeBtn');
-      const progressBox = document.getElementById('progressBox');
-      const progressBar = document.getElementById('progressBar');
-      const stepText = document.getElementById('analysisStepText');
-      const percentText = document.getElementById('analysisPercentText');
-      const scanline = document.getElementById('scanlineOverlay');
-      const aiOverlayText = document.getElementById('aiOverlayText');
-      const aiProgressMsg = document.getElementById('aiProgressMsg');
-
-      analyzeBtn.disabled = true;
-      analyzeBtn.classList.add('opacity-50', 'cursor-not-allowed');
-
-      progressBox.classList.remove('hidden');
-      scanline.classList.remove('hidden');
-      aiOverlayText.classList.remove('hidden');
-      aiOverlayText.classList.add('flex');
-
-      video.currentTime = 0;
-      video.play();
-      document.getElementById('playIcon').className = "fa-solid fa-pause";
-
-      const canvas = document.getElementById('analysisCanvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = canvas.clientWidth;
-      canvas.height = canvas.clientHeight;
-
-      const steps = [
-        { pct: 15, msg: "Detecting base stance & feet alignment...", time: 0.5 },
-        { pct: 40, msg: "Analyzing hand placement under the ball...", time: 1.2 },
-        { pct: 65, msg: "Evaluating shooting elbow angle...", time: 2.0 },
-        { pct: 85, msg: "Checking knee flexion & arm extension arc...", time: 2.8 },
-        { pct: 100, msg: "Measuring wrist snap & follow-through...", time: 3.5 }
-      ];
-
-      let currentStep = 0;
-
-      // Draw skeleton mockup overlay animation loop
-      const animInterval = setInterval(() => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Draw simulated tracking keypoints
-        const w = canvas.width;
-        const h = canvas.height;
-
-        ctx.strokeStyle = '#22c55e';
-        ctx.lineWidth = 3;
-        ctx.fillStyle = '#3b82f6';
-
-        // Draw keypoint skeleton joints
-        const joints = [
-          { x: w * 0.5, y: h * 0.25 }, // Head
-          { x: w * 0.5, y: h * 0.4 },  // Shoulder
-          { x: w * 0.58, y: h * 0.35 },// Elbow
-          { x: w * 0.52, y: h * 0.2 }, // Wrist
-          { x: w * 0.5, y: h * 0.65 }, // Hips
-          { x: w * 0.45, y: h * 0.8 }, // Knees
-          { x: w * 0.43, y: h * 0.92 }  // Feet
-        ];
-
-        // Connect joints
-        ctx.beginPath();
-        ctx.moveTo(joints[0].x, joints[0].y);
-        joints.forEach(j => ctx.lineTo(j.x, j.y));
-        ctx.stroke();
-
-        // Draw joint dots
-        joints.forEach(j => {
-          ctx.beginPath();
-          ctx.arc(j.x, j.y, 5, 0, Math.PI * 2);
-          ctx.fill();
+      while (currentTime <= duration) {
+        videoElement.currentTime = currentTime;
+        await new Promise(resolve => {
+          videoElement.onseeked = resolve;
         });
-      }, 100);
 
-      // Timeline updater
-      const stepInterval = setInterval(() => {
-        if (currentStep < steps.length) {
-          const s = steps[currentStep];
-          progressBar.style.width = `${s.pct}%`;
-          percentText.innerText = `${s.pct}%`;
-          stepText.innerText = s.msg;
-          aiProgressMsg.innerText = s.msg;
-          currentStep++;
-        } else {
-          clearInterval(stepInterval);
-          clearInterval(animInterval);
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        await poseDetector.send({ image: videoElement });
 
-          video.pause();
-          document.getElementById('playIcon').className = "fa-solid fa-play";
+        const percent = Math.min(100, Math.round((currentTime / duration) * 100));
+        progressBar.style.width = `${percent}%`;
+        progressText.innerText = `${percent}%`;
 
-          scanline.classList.add('hidden');
-          aiOverlayText.classList.add('hidden');
-          aiOverlayText.classList.remove('flex');
-          progressBox.classList.add('hidden');
-
-          analyzeBtn.disabled = false;
-          analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-
-          // Apply AI evaluation logic results to checklist
-          applyAutomatedResults();
-          showToast('Analysis completed successfully!', 'success');
-        }
-      }, 700);
-    }
-
-    // Populate checklist with sample evaluation based on detection
-    function applyAutomatedResults() {
-      // High performance result with realistic variation
-      const sampleResults = [
-        { present: true, score: 5 },  // Feet shoulder width
-        { present: true, score: 4 },  // Non-shooting hand side / shooting hand under
-        { present: true, score: 5 },  // Fingers open / high ball resting
-        { present: true, score: 4 },  // Elbow 90 degrees
-        { present: true, score: 4 },  // Bend knees & extend
-        { present: false, score: 2 }   // Flick wrist follow through (needs improvement item)
-      ];
-
-      sampleResults.forEach((res, index) => {
-        const item = criteriaData[index];
-        item.present = res.present;
-        item.score = res.score;
-        updateItemUI(item.id);
-      });
-
-      updateScoreSummary();
-    }
-
-    // Export Student Results to Excel Spreadsheet
-    function exportToExcel() {
-      const studentName = document.getElementById('studentName').value.trim() || 'Unnamed Student';
-      const studentClass = document.getElementById('studentClass').value.trim() || 'N/A';
-      const assessmentDate = document.getElementById('assessmentDate').value || new Date().toISOString().split('T')[0];
-      const overallSummary = document.getElementById('coachingSummaryText').innerText;
-
-      // Prepare worksheet rows
-      const reportData = [
-        ["NETBALL SHOOTING TECHNIQUE ASSESSMENT REPORT"],
-        [""],
-        ["Student Name:", studentName, "", "Date:", assessmentDate],
-        ["Class / Section:", studentClass, "", "Total Score:", document.getElementById('totalScoreBadge').innerText],
-        [""],
-        ["Stage #", "Criteria / Feature", "Presence Status", "Score (1-5)", "Coaching Recommendations"]
-      ];
-
-      criteriaData.forEach(item => {
-        let statusStr = "NOT EVALUATED";
-        if (item.present === true) statusStr = "PRESENT (PASS)";
-        if (item.present === false) statusStr = "ABSENT (NEEDS IMPROVEMENT)";
-
-        reportData.push([
-          `Stage ${item.stage}`,
-          item.feature,
-          statusStr,
-          item.score,
-          item.present === false ? item.coachingTip : "Sustained proficiency"
-        ]);
-      });
-
-      reportData.push([""]);
-      reportData.push(["OVERALL TEACHER FEEDBACK SUMMARY:"]);
-      reportData.push([overallSummary]);
-
-      // Create SheetJS Workbook
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(reportData);
-
-      // Set column widths
-      ws['!cols'] = [
-        { wch: 10 },
-        { wch: 45 },
-        { wch: 25 },
-        { wch: 12 },
-        { wch: 60 }
-      ];
-
-      XLSX.utils.book_append_sheet(wb, ws, "Shooting Analysis");
-
-      // Generate filename
-      const safeName = studentName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const filename = `Netball_Shooting_${safeName}_${assessmentDate}.xlsx`;
-
-      // Save file
-      XLSX.writeFile(wb, filename);
-
-      showToast(`Exported report for ${studentName}`, 'success');
-    }
-
-    // Reset Form for new student
-    function resetForm() {
-      document.getElementById('studentName').value = '';
-      document.getElementById('studentClass').value = '';
-      document.getElementById('videoFileInput').value = '';
-
-      const video = document.getElementById('netballVideo');
-      video.pause();
-      video.src = '';
-
-      document.getElementById('uploadContainer').classList.remove('hidden');
-      document.getElementById('playerContainer').classList.add('hidden');
-      
-      const analyzeBtn = document.getElementById('analyzeBtn');
-      analyzeBtn.disabled = true;
-      analyzeBtn.className = "w-full py-3 px-4 bg-slate-300 text-slate-500 font-bold rounded-xl shadow-none flex items-center justify-center gap-2 cursor-not-allowed transition-all";
-
-      document.getElementById('videoStatusBadge').innerText = 'No Video Uploaded';
-      document.getElementById('videoStatusBadge').className = "text-xs font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-600";
-
-      criteriaData.forEach(item => {
-        item.present = null;
-        item.score = 0;
-        updateItemUI(item.id);
-      });
-
-      updateScoreSummary();
-      showToast('Form reset for new student', 'info');
-    }
-
-    // Toast notification display helper
-    function showToast(message, type = 'info') {
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toastMsg');
-      const toastIcon = document.getElementById('toastIcon');
-
-      toastMsg.innerText = message;
-
-      if (type === 'success') {
-        toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-lg";
-      } else if (type === 'error') {
-        toastIcon.className = "fa-solid fa-circle-xmark text-rose-400 text-lg";
-      } else {
-        toastIcon.className = "fa-solid fa-circle-info text-blue-400 text-lg";
+        currentTime += step;
       }
 
-      toast.classList.remove('hidden');
-      toast.classList.remove('translate-y-4');
-      toast.classList.add('flex');
+      // Evaluate Checklist Rules based on detected Pose metrics
+      evaluateRules();
 
-      setTimeout(() => {
-        toast.classList.add('translate-y-4');
-        setTimeout(() => {
-          toast.classList.add('hidden');
-          toast.classList.remove('flex');
-        }, 300);
-      }, 3000);
+      progressContainer.classList.add('hidden');
+      processBtn.disabled = false;
+      document.getElementById('aiStatusBadge').innerText = "Analysis Complete";
+      document.getElementById('aiStatusBadge').className = "text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-semibold";
+    });
+
+    function evaluateRules() {
+      // Rule 1: Feet shoulder width apart (ratio between 0.8 and 1.35)
+      const feetOk = detectedMetrics.feetWidthRatioMax >= 0.75 && detectedMetrics.feetWidthRatioMax <= 1.4;
+      toggleFeature('item_s1', feetOk);
+      document.getElementById('s1_status').innerText = feetOk 
+        ? `Detected feet ratio: ${(detectedMetrics.feetWidthRatioMax).toFixed(2)}x shoulder width`
+        : `Feet distance narrow/wide (${(detectedMetrics.feetWidthRatioMax).toFixed(2)}x)`;
+
+      // Rule 2.1: Ball holding (Hands present & elevated)
+      const handsOk = detectedMetrics.maxHandHeightRatio > 0.05;
+      toggleFeature('item_s2_1', handsOk);
+      document.getElementById('s2_1_status').innerText = handsOk ? "Proper shooting hand positioning detected" : "Check hand placement";
+
+      // Rule 2.2: Ball resting high above head
+      const highBall = detectedMetrics.maxHandHeightRatio > 0.08;
+      toggleFeature('item_s2_2', highBall);
+      document.getElementById('s2_2_status').innerText = highBall ? "Ball held high above head" : "Ball position low";
+
+      // Rule 2.3: Elbow at right angle (approx 75° to 110°)
+      const elbowRightAngle = detectedMetrics.minElbowAngle >= 70 && detectedMetrics.minElbowAngle <= 115;
+      toggleFeature('item_s2_3', elbowRightAngle);
+      document.getElementById('s2_3_status').innerText = `Min elbow flexion angle: ${Math.round(detectedMetrics.minElbowAngle)}°`;
+
+      // Rule 3.1: Bend knees and extend arm
+      const executionOk = detectedMetrics.kneeBendDetected && detectedMetrics.elbowExtensionMax > 155;
+      toggleFeature('item_s3_1', executionOk);
+      document.getElementById('s3_1_status').innerText = executionOk ? "Knee dip and full arm extension detected" : "Limited knee bend or extension";
+
+      // Rule 3.2: Wrist flick follow-through
+      const wristFlickOk = detectedMetrics.elbowExtensionMax > 160;
+      toggleFeature('item_s3_2', wristFlickOk);
+      document.getElementById('s3_2_status').innerText = wristFlickOk ? "Follow-through extension present" : "Incomplete follow-through";
     }
+
+    // Export Excel Functionality using SheetJS
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const name = document.getElementById('studentName').value.trim() || 'Unassigned Student';
+      const studentClass = document.getElementById('studentClass').value.trim() || 'N/A';
+
+      const data = [
+        ["Netball Shooting Analysis Report"],
+        ["Student Name", name],
+        ["Class / Section", studentClass],
+        ["Date of Assessment", new Date().toLocaleDateString()],
+        [],
+        ["Stage", "Skill Feature Criteria", "AI Detection Status", "Score (1-5)"],
+        
+        ["Stage 1", "Feet shoulder width apart", featureStates.item_s1 ? "Present" : "Absent", document.getElementById('score_item_s1').value],
+        ["Stage 2", "Non-shooting hand on side & shooting hand under ball", featureStates.item_s2_1 ? "Present" : "Absent", document.getElementById('score_item_s2_1').value],
+        ["Stage 2", "Fingers open, resting ball high above head", featureStates.item_s2_2 ? "Present" : "Absent", document.getElementById('score_item_s2_2').value],
+        ["Stage 2", "Shooting arm elbow at right angle pointing to net", featureStates.item_s2_3 ? "Present" : "Absent", document.getElementById('score_item_s2_3').value],
+        ["Stage 3", "Bend knees and straighten arm when shooting", featureStates.item_s3_1 ? "Present" : "Absent", document.getElementById('score_item_s3_1').value],
+        ["Stage 3", "Flick wrist on follow through", featureStates.item_s3_2 ? "Present" : "Absent", document.getElementById('score_item_s3_2').value]
+      ];
+
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Analysis Result");
+
+      // Auto-fit columns
+      ws['!cols'] = [{ wch: 12 }, { wch: 50 }, { wch: 20 }, { wch: 12 }];
+
+      const fileName = `${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_netball_analysis.xlsx`;
+      XLSX.writeFile(wb, fileName);
+    });
   </script>
 </body>
 </html>
