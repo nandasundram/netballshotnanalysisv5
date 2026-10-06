@@ -50,7 +50,7 @@
   <!-- Main Content Layout -->
   <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-    <!-- LEFT COLUMN: Video Upload & AI Processing Canvas (7 cols) -->
+    <!-- LEFT COLUMN: Video Upload & Controls (7 cols) -->
     <section class="lg:col-span-7 flex flex-col gap-4">
       <div class="glass-card rounded-xl p-5 shadow-sm border border-slate-200">
         <h2 class="text-lg font-bold text-slate-700 mb-3 flex items-center justify-between">
@@ -68,7 +68,7 @@
 
         <!-- Video Player / Overlay Canvas container -->
         <div class="relative aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center border border-slate-300 shadow-inner">
-          <video id="videoElement" class="hidden" playsinline></video>
+          <video id="videoElement" class="hidden" playsinline controls></video>
           <canvas id="outputCanvas" class="w-full h-full object-contain"></canvas>
           
           <div id="placeholderText" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 p-4 text-center">
@@ -77,6 +77,18 @@
             </svg>
             <p class="font-medium text-sm">No video uploaded yet</p>
             <p class="text-xs text-slate-500 mt-1">Upload a student's netball shooting clip to begin analysis</p>
+          </div>
+        </div>
+
+        <!-- Playback Controls (Speed / Slow Motion) -->
+        <div class="mt-3 flex flex-wrap items-center justify-between bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+          <span class="font-semibold text-slate-600">⏩ Video Speed (Slow-Mo):</span>
+          <div class="flex items-center gap-1.5 mt-1 sm:mt-0">
+            <button onclick="setSpeed(0.25)" class="speed-btn px-2 py-1 rounded bg-white border border-slate-300 hover:bg-slate-100 font-medium">0.25x</button>
+            <button onclick="setSpeed(0.5)" class="speed-btn px-2 py-1 rounded bg-white border border-slate-300 hover:bg-slate-100 font-medium">0.5x</button>
+            <button onclick="setSpeed(0.75)" class="speed-btn px-2 py-1 rounded bg-white border border-slate-300 hover:bg-slate-100 font-medium">0.75x</button>
+            <button onclick="setSpeed(1.0)" class="speed-btn active-speed px-2 py-1 rounded bg-indigo-600 text-white font-medium">1.0x (Normal)</button>
+            <button onclick="setSpeed(1.5)" class="speed-btn px-2 py-1 rounded bg-white border border-slate-300 hover:bg-slate-100 font-medium">1.5x</button>
           </div>
         </div>
 
@@ -110,7 +122,7 @@
         </div>
 
         <p class="text-xs text-slate-500 mb-4">
-          Features automatically evaluated by MediaPipe AI joint tracking. You can also manually toggle or rate score (1-5).
+          Features evaluated by MediaPipe AI. Ratings (1-2: Absent, 3: Neutral, 4-5: Present) are auto-assigned based on AI confidence.
         </p>
 
         <!-- Checklist Items Container -->
@@ -125,13 +137,13 @@
                 <span id="s1_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
               </div>
               <div class="flex flex-col items-end gap-1">
-                <button onclick="toggleFeature('item_s1')" id="btn_item_s1" class="px-2.5 py-1 text-xs font-bold rounded border bg-white text-slate-600 hover:bg-slate-100">❓ Unchecked</button>
+                <button onclick="toggleFeature('item_s1')" id="btn_item_s1" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
                 <select id="score_item_s1" class="text-xs border rounded px-1.5 py-0.5 bg-white">
-                  <option value="5">Score: 5</option>
-                  <option value="4">Score: 4</option>
-                  <option value="3" selected>Score: 3</option>
-                  <option value="2">Score: 2</option>
-                  <option value="1">Score: 1</option>
+                  <option value="5">Score: 5 (Excellent)</option>
+                  <option value="4">Score: 4 (Good)</option>
+                  <option value="3" selected>Score: 3 (Neutral)</option>
+                  <option value="2">Score: 2 (Needs Work)</option>
+                  <option value="1">Score: 1 (Poor)</option>
                 </select>
               </div>
             </div>
@@ -148,13 +160,13 @@
                 <span id="s2_1_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
               </div>
               <div class="flex flex-col items-end gap-1">
-                <button onclick="toggleFeature('item_s2_1')" id="btn_item_s2_1" class="px-2.5 py-1 text-xs font-bold rounded border bg-white text-slate-600 hover:bg-slate-100">❓ Unchecked</button>
+                <button onclick="toggleFeature('item_s2_1')" id="btn_item_s2_1" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
                 <select id="score_item_s2_1" class="text-xs border rounded px-1.5 py-0.5 bg-white">
-                  <option value="5">Score: 5</option>
-                  <option value="4">Score: 4</option>
-                  <option value="3" selected>Score: 3</option>
-                  <option value="2">Score: 2</option>
-                  <option value="1">Score: 1</option>
+                  <option value="5">Score: 5 (Excellent)</option>
+                  <option value="4">Score: 4 (Good)</option>
+                  <option value="3" selected>Score: 3 (Neutral)</option>
+                  <option value="2">Score: 2 (Needs Work)</option>
+                  <option value="1">Score: 1 (Poor)</option>
                 </select>
               </div>
             </div>
@@ -166,13 +178,13 @@
                 <span id="s2_2_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
               </div>
               <div class="flex flex-col items-end gap-1">
-                <button onclick="toggleFeature('item_s2_2')" id="btn_item_s2_2" class="px-2.5 py-1 text-xs font-bold rounded border bg-white text-slate-600 hover:bg-slate-100">❓ Unchecked</button>
+                <button onclick="toggleFeature('item_s2_2')" id="btn_item_s2_2" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
                 <select id="score_item_s2_2" class="text-xs border rounded px-1.5 py-0.5 bg-white">
-                  <option value="5">Score: 5</option>
-                  <option value="4">Score: 4</option>
-                  <option value="3" selected>Score: 3</option>
-                  <option value="2">Score: 2</option>
-                  <option value="1">Score: 1</option>
+                  <option value="5">Score: 5 (Excellent)</option>
+                  <option value="4">Score: 4 (Good)</option>
+                  <option value="3" selected>Score: 3 (Neutral)</option>
+                  <option value="2">Score: 2 (Needs Work)</option>
+                  <option value="1">Score: 1 (Poor)</option>
                 </select>
               </div>
             </div>
@@ -180,17 +192,17 @@
             <!-- Feature 2.3 -->
             <div class="flex items-start justify-between gap-3">
               <div class="flex-1">
-                <p class="text-sm font-medium text-slate-800">Shooting arm elbow at right angle towards net</p>
+                <p class="text-sm font-medium text-slate-800">Shooting arm elbow at right angle pointing towards net</p>
                 <span id="s2_3_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
               </div>
               <div class="flex flex-col items-end gap-1">
-                <button onclick="toggleFeature('item_s2_3')" id="btn_item_s2_3" class="px-2.5 py-1 text-xs font-bold rounded border bg-white text-slate-600 hover:bg-slate-100">❓ Unchecked</button>
+                <button onclick="toggleFeature('item_s2_3')" id="btn_item_s2_3" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
                 <select id="score_item_s2_3" class="text-xs border rounded px-1.5 py-0.5 bg-white">
-                  <option value="5">Score: 5</option>
-                  <option value="4">Score: 4</option>
-                  <option value="3" selected>Score: 3</option>
-                  <option value="2">Score: 2</option>
-                  <option value="1">Score: 1</option>
+                  <option value="5">Score: 5 (Excellent)</option>
+                  <option value="4">Score: 4 (Good)</option>
+                  <option value="3" selected>Score: 3 (Neutral)</option>
+                  <option value="2">Score: 2 (Needs Work)</option>
+                  <option value="1">Score: 1 (Poor)</option>
                 </select>
               </div>
             </div>
@@ -207,13 +219,13 @@
                 <span id="s3_1_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
               </div>
               <div class="flex flex-col items-end gap-1">
-                <button onclick="toggleFeature('item_s3_1')" id="btn_item_s3_1" class="px-2.5 py-1 text-xs font-bold rounded border bg-white text-slate-600 hover:bg-slate-100">❓ Unchecked</button>
+                <button onclick="toggleFeature('item_s3_1')" id="btn_item_s3_1" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
                 <select id="score_item_s3_1" class="text-xs border rounded px-1.5 py-0.5 bg-white">
-                  <option value="5">Score: 5</option>
-                  <option value="4">Score: 4</option>
-                  <option value="3" selected>Score: 3</option>
-                  <option value="2">Score: 2</option>
-                  <option value="1">Score: 1</option>
+                  <option value="5">Score: 5 (Excellent)</option>
+                  <option value="4">Score: 4 (Good)</option>
+                  <option value="3" selected>Score: 3 (Neutral)</option>
+                  <option value="2">Score: 2 (Needs Work)</option>
+                  <option value="1">Score: 1 (Poor)</option>
                 </select>
               </div>
             </div>
@@ -225,13 +237,13 @@
                 <span id="s3_2_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
               </div>
               <div class="flex flex-col items-end gap-1">
-                <button onclick="toggleFeature('item_s3_2')" id="btn_item_s3_2" class="px-2.5 py-1 text-xs font-bold rounded border bg-white text-slate-600 hover:bg-slate-100">❓ Unchecked</button>
+                <button onclick="toggleFeature('item_s3_2')" id="btn_item_s3_2" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
                 <select id="score_item_s3_2" class="text-xs border rounded px-1.5 py-0.5 bg-white">
-                  <option value="5">Score: 5</option>
-                  <option value="4">Score: 4</option>
-                  <option value="3" selected>Score: 3</option>
-                  <option value="2">Score: 2</option>
-                  <option value="1">Score: 1</option>
+                  <option value="5">Score: 5 (Excellent)</option>
+                  <option value="4">Score: 4 (Good)</option>
+                  <option value="3" selected>Score: 3 (Neutral)</option>
+                  <option value="2">Score: 2 (Needs Work)</option>
+                  <option value="1">Score: 1 (Poor)</option>
                 </select>
               </div>
             </div>
@@ -244,14 +256,14 @@
   </main>
 
   <script>
-    // State management for checklist features
+    // State management for checklist features: 'present', 'absent', 'neutral'
     const featureStates = {
-      item_s1: false,
-      item_s2_1: false,
-      item_s2_2: false,
-      item_s2_3: false,
-      item_s3_1: false,
-      item_s3_2: false
+      item_s1: 'neutral',
+      item_s2_1: 'neutral',
+      item_s2_2: 'neutral',
+      item_s2_3: 'neutral',
+      item_s3_1: 'neutral',
+      item_s3_2: 'neutral'
     };
 
     const videoInput = document.getElementById('videoInput');
@@ -269,237 +281,4 @@
     // Initialize MediaPipe Pose
     function initMediaPipe() {
       poseDetector = new Pose({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
-      });
-      poseDetector.setOptions({
-        modelComplexity: 1,
-        smoothLandmarks: true,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
-      });
-
-      poseDetector.onResults(onPoseResults);
-    }
-    initMediaPipe();
-
-    // Toggle checklist manually
-    function toggleFeature(id, forceState = null) {
-      if (forceState !== null) {
-        featureStates[id] = forceState;
-      } else {
-        featureStates[id] = !featureStates[id];
-      }
-
-      const btn = document.getElementById(`btn_${id}`);
-      if (featureStates[id]) {
-        btn.className = 'px-2.5 py-1 text-xs font-bold rounded bg-emerald-100 text-emerald-800 border border-emerald-300';
-        btn.innerHTML = '✅ Present';
-      } else {
-        btn.className = 'px-2.5 py-1 text-xs font-bold rounded bg-rose-100 text-rose-800 border border-rose-300';
-        btn.innerHTML = '❌ Absent';
-      }
-    }
-
-    // Video Upload Event
-    videoInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const url = URL.createObjectURL(file);
-      videoElement.src = url;
-      placeholderText.classList.add('hidden');
-      processBtn.disabled = false;
-
-      videoElement.onloadedmetadata = () => {
-        outputCanvas.width = videoElement.videoWidth;
-        outputCanvas.height = videoElement.videoHeight;
-        // Render first frame preview
-        videoElement.currentTime = 0;
-      };
-    });
-
-    videoElement.addEventListener('seeked', () => {
-      canvasCtx.drawImage(videoElement, 0, 0, outputCanvas.width, outputCanvas.height);
-    });
-
-    // Angle calculation helper
-    function calculateAngle(A, B, C) {
-      const rad = Math.atan2(C.y - B.y, C.x - B.x) - Math.atan2(A.y - B.y, A.x - B.x);
-      let angle = Math.abs((rad * 180.0) / Math.PI);
-      if (angle > 180.0) angle = 360 - angle;
-      return angle;
-    }
-
-    // Motion metric trackers during video scan
-    let detectedMetrics = {
-      feetWidthRatioMax: 0,
-      minElbowAngle: 180,
-      maxHandHeightRatio: 0,
-      kneeBendDetected: false,
-      elbowExtensionMax: 0,
-      wristFlickAngleMax: 0
-    };
-
-    function onPoseResults(results) {
-      canvasCtx.save();
-      canvasCtx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
-      canvasCtx.drawImage(results.image, 0, 0, outputCanvas.width, outputCanvas.height);
-
-      if (results.poseLandmarks) {
-        // Draw MediaPipe Skeleton
-        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#6366F1', lineWidth: 3 });
-        drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#10B981', lineWidth: 1, radius: 3 });
-
-        const lm = results.poseLandmarks;
-        // Key landmark indices
-        const lShoulder = lm[11], rShoulder = lm[12];
-        const lElbow = lm[13], rElbow = lm[14];
-        const lWrist = lm[15], rWrist = lm[16];
-        const lAnkle = lm[27], rAnkle = lm[28];
-        const lKnee = lm[25], rKnee = lm[26];
-        const lHip = lm[23], rHip = lm[24];
-
-        // 1. Feet Width Check
-        const shoulderDist = Math.hypot(rShoulder.x - lShoulder.x, rShoulder.y - lShoulder.y);
-        const feetDist = Math.hypot(rAnkle.x - lAnkle.x, rAnkle.y - lAnkle.y);
-        if (shoulderDist > 0) {
-          const ratio = feetDist / shoulderDist;
-          if (ratio > detectedMetrics.feetWidthRatioMax) detectedMetrics.feetWidthRatioMax = ratio;
-        }
-
-        // 2. Elbow Angle
-        const rightElbowAngle = calculateAngle(rShoulder, rElbow, rWrist);
-        const leftElbowAngle = calculateAngle(lShoulder, lElbow, lWrist);
-        const shootingElbowAngle = Math.min(rightElbowAngle, leftElbowAngle);
-        if (shootingElbowAngle < detectedMetrics.minElbowAngle) detectedMetrics.minElbowAngle = shootingElbowAngle;
-
-        // 3. Ball above head (Wrists above eyes/ears)
-        const avgWristY = (lWrist.y + rWrist.y) / 2;
-        const avgNoseY = lm[0].y;
-        if (avgNoseY - avgWristY > detectedMetrics.maxHandHeightRatio) {
-          detectedMetrics.maxHandHeightRatio = avgNoseY - avgWristY;
-        }
-
-        // 4. Knee Bend & Extension
-        const rKneeAngle = calculateAngle(rHip, rKnee, rAnkle);
-        if (rKneeAngle < 155) detectedMetrics.kneeBendDetected = true;
-
-        const maxArmExt = Math.max(rightElbowAngle, leftElbowAngle);
-        if (maxArmExt > detectedMetrics.elbowExtensionMax) detectedMetrics.elbowExtensionMax = maxArmExt;
-      }
-      canvasCtx.restore();
-    }
-
-    // Process Video Frame-by-Frame
-    processBtn.addEventListener('click', async () => {
-      if (!videoElement.src) return;
-
-      processBtn.disabled = true;
-      progressContainer.classList.remove('hidden');
-
-      // Reset metrics
-      detectedMetrics = {
-        feetWidthRatioMax: 0,
-        minElbowAngle: 180,
-        maxHandHeightRatio: -1,
-        kneeBendDetected: false,
-        elbowExtensionMax: 0,
-        wristFlickAngleMax: 0
-      };
-
-      const duration = videoElement.duration;
-      const step = 0.1; // Frame sampling step in seconds
-      let currentTime = 0;
-
-      while (currentTime <= duration) {
-        videoElement.currentTime = currentTime;
-        await new Promise(resolve => {
-          videoElement.onseeked = resolve;
-        });
-
-        await poseDetector.send({ image: videoElement });
-
-        const percent = Math.min(100, Math.round((currentTime / duration) * 100));
-        progressBar.style.width = `${percent}%`;
-        progressText.innerText = `${percent}%`;
-
-        currentTime += step;
-      }
-
-      // Evaluate Checklist Rules based on detected Pose metrics
-      evaluateRules();
-
-      progressContainer.classList.add('hidden');
-      processBtn.disabled = false;
-      document.getElementById('aiStatusBadge').innerText = "Analysis Complete";
-      document.getElementById('aiStatusBadge').className = "text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-semibold";
-    });
-
-    function evaluateRules() {
-      // Rule 1: Feet shoulder width apart (ratio between 0.8 and 1.35)
-      const feetOk = detectedMetrics.feetWidthRatioMax >= 0.75 && detectedMetrics.feetWidthRatioMax <= 1.4;
-      toggleFeature('item_s1', feetOk);
-      document.getElementById('s1_status').innerText = feetOk 
-        ? `Detected feet ratio: ${(detectedMetrics.feetWidthRatioMax).toFixed(2)}x shoulder width`
-        : `Feet distance narrow/wide (${(detectedMetrics.feetWidthRatioMax).toFixed(2)}x)`;
-
-      // Rule 2.1: Ball holding (Hands present & elevated)
-      const handsOk = detectedMetrics.maxHandHeightRatio > 0.05;
-      toggleFeature('item_s2_1', handsOk);
-      document.getElementById('s2_1_status').innerText = handsOk ? "Proper shooting hand positioning detected" : "Check hand placement";
-
-      // Rule 2.2: Ball resting high above head
-      const highBall = detectedMetrics.maxHandHeightRatio > 0.08;
-      toggleFeature('item_s2_2', highBall);
-      document.getElementById('s2_2_status').innerText = highBall ? "Ball held high above head" : "Ball position low";
-
-      // Rule 2.3: Elbow at right angle (approx 75° to 110°)
-      const elbowRightAngle = detectedMetrics.minElbowAngle >= 70 && detectedMetrics.minElbowAngle <= 115;
-      toggleFeature('item_s2_3', elbowRightAngle);
-      document.getElementById('s2_3_status').innerText = `Min elbow flexion angle: ${Math.round(detectedMetrics.minElbowAngle)}°`;
-
-      // Rule 3.1: Bend knees and extend arm
-      const executionOk = detectedMetrics.kneeBendDetected && detectedMetrics.elbowExtensionMax > 155;
-      toggleFeature('item_s3_1', executionOk);
-      document.getElementById('s3_1_status').innerText = executionOk ? "Knee dip and full arm extension detected" : "Limited knee bend or extension";
-
-      // Rule 3.2: Wrist flick follow-through
-      const wristFlickOk = detectedMetrics.elbowExtensionMax > 160;
-      toggleFeature('item_s3_2', wristFlickOk);
-      document.getElementById('s3_2_status').innerText = wristFlickOk ? "Follow-through extension present" : "Incomplete follow-through";
-    }
-
-    // Export Excel Functionality using SheetJS
-    document.getElementById('exportBtn').addEventListener('click', () => {
-      const name = document.getElementById('studentName').value.trim() || 'Unassigned Student';
-      const studentClass = document.getElementById('studentClass').value.trim() || 'N/A';
-
-      const data = [
-        ["Netball Shooting Analysis Report"],
-        ["Student Name", name],
-        ["Class / Section", studentClass],
-        ["Date of Assessment", new Date().toLocaleDateString()],
-        [],
-        ["Stage", "Skill Feature Criteria", "AI Detection Status", "Score (1-5)"],
-        
-        ["Stage 1", "Feet shoulder width apart", featureStates.item_s1 ? "Present" : "Absent", document.getElementById('score_item_s1').value],
-        ["Stage 2", "Non-shooting hand on side & shooting hand under ball", featureStates.item_s2_1 ? "Present" : "Absent", document.getElementById('score_item_s2_1').value],
-        ["Stage 2", "Fingers open, resting ball high above head", featureStates.item_s2_2 ? "Present" : "Absent", document.getElementById('score_item_s2_2').value],
-        ["Stage 2", "Shooting arm elbow at right angle pointing to net", featureStates.item_s2_3 ? "Present" : "Absent", document.getElementById('score_item_s2_3').value],
-        ["Stage 3", "Bend knees and straighten arm when shooting", featureStates.item_s3_1 ? "Present" : "Absent", document.getElementById('score_item_s3_1').value],
-        ["Stage 3", "Flick wrist on follow through", featureStates.item_s3_2 ? "Present" : "Absent", document.getElementById('score_item_s3_2').value]
-      ];
-
-      const ws = XLSX.utils.aoa_to_sheet(data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Analysis Result");
-
-      // Auto-fit columns
-      ws['!cols'] = [{ wch: 12 }, { wch: 50 }, { wch: 20 }, { wch: 12 }];
-
-      const fileName = `${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_netball_analysis.xlsx`;
-      XLSX.writeFile(wb, fileName);
-    });
-  </script>
-</body>
-</html>
+        locateFile: (file)
