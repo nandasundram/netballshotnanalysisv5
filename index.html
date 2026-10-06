@@ -20,16 +20,16 @@
     <!-- Header Section -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
       
-      <!-- Top-Left: Videoing Requirements -->
-      <div class="md:col-span-4 bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-1.5">
-        <h3 class="font-bold text-amber-900 text-xs flex items-center gap-1">
-          📹 Videoing Requirements
+      <!-- Top-Left: Filming Requirements Box -->
+      <div class="md:col-span-4 bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-1">
+        <h3 class="font-bold text-amber-900 text-xs flex items-center gap-1 mb-1">
+          📹 Filming Requirements
         </h3>
         <ul class="text-[11px] text-amber-800 space-y-1 leading-tight">
-          <li>📐 <b>Side Profile:</b> Stand directly to the side of the shooter (90°).</li>
-          <li>🚶 <b>Full Body:</b> Capture whole body (feet to release height).</li>
-          <li>☀️ <b>Lighting:</b> Good light with clear contrast against background.</li>
-          <li>📱 <b>Steady Clip:</b> Keep camera still throughout the full shot.</li>
+          <li>📱 <b>Portrait Mode:</b> Hold camera vertically in portrait orientation.</li>
+          <li>🚶 <b>Capture Whole Motion:</b> Record full body (feet to top release height).</li>
+          <li>☀️ <b>Bright Setting:</b> Ensure bright lighting with clear contrast.</li>
+          <li>📐 <b>90° Side Profile:</b> Stand directly to the side of the shooter.</li>
         </ul>
       </div>
 
@@ -37,7 +37,7 @@
       <div class="md:col-span-8 flex flex-col justify-between space-y-3">
         <div>
           <h1 class="text-xl font-extrabold text-indigo-950">Netball Shooting Analysis & Peer Coaching</h1>
-          <p class="text-xs text-slate-500">Automated MediaPipe AI pose evaluation paired with manual slow-motion review.</p>
+          <p class="text-xs text-slate-500">Automated MediaPipe AI pose evaluation paired with interactive peer dialogue matching.</p>
         </div>
         <div class="grid grid-cols-3 gap-2 text-xs">
           <div>
@@ -101,7 +101,7 @@
 
           <!-- Speed Controls -->
           <div class="bg-slate-50 p-2.5 rounded border border-slate-200 space-y-2">
-            <div class="text-[11px] font-semibold text-slate-600">Playback Rate:</div>
+            <div class="text-[11px] font-semibold text-slate-600">Playback Speed Control:</div>
             <div class="grid grid-cols-4 gap-1.5">
               <button onclick="setSpeed(0.25)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-[11px] font-medium text-slate-700">0.25x</button>
               <button onclick="setSpeed(0.5)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-[11px] font-medium text-slate-700">0.50x</button>
@@ -117,15 +117,15 @@
 
       </div>
 
-      <!-- RIGHT COLUMN: Assessment Rubric & E21CC Dialogue -->
+      <!-- RIGHT COLUMN: Assessment Rubric & E21CC Interactive Matching Dialogue -->
       <div class="lg:col-span-6 space-y-4">
 
-        <!-- Assessment Rubric Table -->
+        <!-- Technical Assessment Rubric Table -->
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
           <div class="flex justify-between items-center border-b pb-2">
             <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider">3. Technical Assessment (1–5)</h2>
             <div class="text-right">
-              <span class="text-xs text-slate-500">Total:</span>
+              <span class="text-xs text-slate-500">Total Score:</span>
               <span id="totalScore" class="text-sm font-extrabold text-indigo-700 ml-1">18 / 30</span>
             </div>
           </div>
@@ -135,18 +135,84 @@
           </div>
         </div>
 
-        <!-- Co-Construction Dialogue Section -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
-          <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider border-b pb-2">4. Co-Construction Dialogue & Export</h2>
-          
+        <!-- Part 3: Interactive Scrambled Peer Feedback Matching -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+          <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider border-b pb-2">
+            4. Interactive Peer Dialogue & Impact Matching
+          </h2>
+
+          <!-- Strengths Section -->
+          <div class="space-y-2 text-xs bg-slate-50 p-3 rounded border border-slate-200">
+            <h3 class="font-bold text-emerald-800 flex items-center justify-between">
+              <span>🌟 Match Strengths to Biomechanical Impact</span>
+              <span id="strengthMatchStatus" class="text-[10px] text-slate-500">Match 2 Strengths</span>
+            </h3>
+
+            <!-- Strength Pair 1 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] text-slate-600 font-medium mb-0.5">Strength Skill 1</label>
+                <select id="sSkill1" onchange="checkStrengthPair(1)" class="w-full p-1.5 border rounded bg-white text-xs">
+                  <option value="">-- Select Skill --</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-600 font-medium mb-0.5">Match Impact 1</label>
+                <select id="sImpact1" onchange="checkStrengthPair(1)" class="w-full p-1.5 border rounded bg-white text-xs">
+                  <option value="">-- Select Impact --</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Strength Pair 2 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] text-slate-600 font-medium mb-0.5">Strength Skill 2</label>
+                <select id="sSkill2" onchange="checkStrengthPair(2)" class="w-full p-1.5 border rounded bg-white text-xs">
+                  <option value="">-- Select Skill --</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-600 font-medium mb-0.5">Match Impact 2</label>
+                <select id="sImpact2" onchange="checkStrengthPair(2)" class="w-full p-1.5 border rounded bg-white text-xs">
+                  <option value="">-- Select Impact --</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Areas for Improvement Section -->
+          <div class="space-y-2 text-xs bg-slate-50 p-3 rounded border border-slate-200">
+            <h3 class="font-bold text-rose-800 flex items-center justify-between">
+              <span>🎯 Match Area for Improvement to Impact</span>
+              <span id="impMatchStatus" class="text-[10px] text-slate-500">Match 1 Focus Area</span>
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] text-slate-600 font-medium mb-0.5">Improvement Area</label>
+                <select id="impSkill" onchange="checkImprovementPair()" class="w-full p-1.5 border rounded bg-white text-xs">
+                  <option value="">-- Select Skill --</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-600 font-medium mb-0.5">Expected Impact</label>
+                <select id="impImpact" onchange="checkImprovementPair()" class="w-full p-1.5 border rounded bg-white text-xs">
+                  <option value="">-- Select Impact --</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes & Reflections -->
           <div class="space-y-2 text-xs">
             <div>
-              <label class="block font-semibold text-slate-600 mb-0.5">Observer Feedback Note</label>
-              <textarea id="observerNotes" rows="2" class="w-full p-2 border rounded bg-slate-50 text-xs" placeholder="Summarize key biomechanical observations..."></textarea>
+              <label class="block font-semibold text-slate-600 mb-0.5">Observer Coaching Message</label>
+              <textarea id="observerNotes" rows="2" class="w-full p-2 border rounded bg-slate-50 text-xs" placeholder="Auto-generated coaching guidance or custom notes..."></textarea>
             </div>
             <div>
-              <label class="block font-semibold text-slate-600 mb-0.5">Performer Response Note</label>
-              <textarea id="performerNotes" rows="2" class="w-full p-2 border rounded bg-slate-50 text-xs" placeholder="Performer reflections and agreed targets..."></textarea>
+              <label class="block font-semibold text-slate-600 mb-0.5">Performer Reflection Note</label>
+              <textarea id="performerNotes" rows="2" class="w-full p-2 border rounded bg-slate-50 text-xs" placeholder="Performer reflections and agreed target..."></textarea>
             </div>
           </div>
 
@@ -172,8 +238,95 @@
       { id: 'c6', title: '6. Follow-Through Wrist Flick', desc: 'Soft wrist drop towards ring.' }
     ];
 
-    let poseEngine = null;
-    let landmarkFrames = [];
+    // Skill to Biomechanical Impact Master Mapping
+    const skillImpactPairs = [
+      { skill: "Feet shoulder width apart", impact: "Maintains a balanced, stable shooting base" },
+      { skill: "Ball resting high above head", impact: "Improves aim and trajectory towards ring" },
+      { skill: "Shooting elbow angled under ball", impact: "Maximizes shot directional accuracy" },
+      { skill: "Bend knees before release", impact: "Generates optimal upward power" },
+      { skill: "Full arm extension at release", impact: "Ensures high release point over defender" },
+      { skill: "Wrist flick on follow-through", impact: "Creates backspin to soften rim contact" }
+    ];
+
+    // Utility: Fisher-Yates Random Shuffle
+    function shuffleArray(array) {
+      let shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    // Populate and scramble matching dropdown options
+    function initScrambledDropdowns() {
+      const skillsList = skillImpactPairs.map(p => p.skill);
+      const impactsList = skillImpactPairs.map(p => p.impact);
+
+      const scrambledSkills1 = shuffleArray(skillsList);
+      const scrambledSkills2 = shuffleArray(skillsList);
+      const scrambledSkillsImp = shuffleArray(skillsList);
+
+      const scrambledImpacts1 = shuffleArray(impactsList);
+      const scrambledImpacts2 = shuffleArray(impactsList);
+      const scrambledImpactsImp = shuffleArray(impactsList);
+
+      populateSelect('sSkill1', scrambledSkills1);
+      populateSelect('sSkill2', scrambledSkills2);
+      populateSelect('impSkill', scrambledSkillsImp);
+
+      populateSelect('sImpact1', scrambledImpacts1);
+      populateSelect('sImpact2', scrambledImpacts2);
+      populateSelect('impImpact', scrambledImpactsImp);
+    }
+
+    function populateSelect(id, optionsArray) {
+      const select = document.getElementById(id);
+      select.innerHTML = '<option value="">-- Select --</option>';
+      optionsArray.forEach(opt => {
+        const el = document.createElement('option');
+        el.value = opt;
+        el.textContent = opt;
+        select.appendChild(el);
+      });
+    }
+
+    // Pair Validation Logic
+    function checkStrengthPair(pairNum) {
+      const skillVal = document.getElementById(`sSkill${pairNum}`).value;
+      const impactVal = document.getElementById(`sImpact${pairNum}`).value;
+      const impactSelect = document.getElementById(`sImpact${pairNum}`);
+
+      if (!skillVal || !impactVal) {
+        impactSelect.className = "w-full p-1.5 border rounded bg-white text-xs";
+        return;
+      }
+
+      const pair = skillImpactPairs.find(p => p.skill === skillVal);
+      if (pair && pair.impact === impactVal) {
+        impactSelect.className = "w-full p-1.5 border-2 border-emerald-500 rounded bg-emerald-50 text-emerald-900 font-semibold text-xs";
+      } else {
+        impactSelect.className = "w-full p-1.5 border-2 border-rose-500 rounded bg-rose-50 text-rose-900 text-xs";
+      }
+    }
+
+    function checkImprovementPair() {
+      const skillVal = document.getElementById('impSkill').value;
+      const impactVal = document.getElementById('impImpact').value;
+      const impactSelect = document.getElementById('impImpact');
+
+      if (!skillVal || !impactVal) {
+        impactSelect.className = "w-full p-1.5 border rounded bg-white text-xs";
+        return;
+      }
+
+      const pair = skillImpactPairs.find(p => p.skill === skillVal);
+      if (pair && pair.impact === impactVal) {
+        impactSelect.className = "w-full p-1.5 border-2 border-emerald-500 rounded bg-emerald-50 text-emerald-900 font-semibold text-xs";
+      } else {
+        impactSelect.className = "w-full p-1.5 border-2 border-rose-500 rounded bg-rose-50 text-rose-900 text-xs";
+      }
+    }
 
     // Render Rubric
     function initRubric() {
@@ -200,8 +353,11 @@
     }
 
     initRubric();
+    initScrambledDropdowns();
 
     // DOM References
+    let poseEngine = null;
+    let landmarkFrames = [];
     const aiVideoInput = document.getElementById('aiVideoInput');
     const manualVideoInput = document.getElementById('manualVideoInput');
     const aiVideo = document.getElementById('aiVideo');
@@ -266,7 +422,6 @@
       canvasCtx.restore();
     }
 
-    // Angle Calculation helper
     function getAngle(a, b, c) {
       const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
       let angle = Math.abs((radians * 180.0) / Math.PI);
@@ -274,7 +429,6 @@
       return angle;
     }
 
-    // Run AI Scanning Loop
     async function runPoseAnalysis() {
       if (!aiVideo.src) {
         alert("Please upload a video file first.");
@@ -296,16 +450,12 @@
       aiStatus.textContent = 'Completed';
     }
 
-    // Map Pose Data to Rubric Scores
     function evaluateLandmarks() {
       if (landmarkFrames.length === 0) {
-        fallbackEvaluate();
+        applyScores({ c1: 3, c2: 3, c3: 3, c4: 3, c5: 3, c6: 3 });
         return;
       }
 
-      let scores = { c1: 3, c2: 3, c3: 3, c4: 3, c5: 3, c6: 3 };
-
-      // Process samples
       let minKneeAngle = 180;
       let maxElbowExt = 0;
 
@@ -316,19 +466,11 @@
         if (rightElbow > maxElbowExt) maxElbowExt = rightElbow;
       });
 
-      // Compressed evaluation mapping
-      scores.c1 = 3;
-      scores.c2 = 3;
-      scores.c3 = 3;
+      let scores = { c1: 3, c2: 3, c3: 3, c4: 3, c5: 3, c6: 3 };
       scores.c4 = minKneeAngle < 140 ? 4 : 2;
       scores.c5 = maxElbowExt > 150 ? 4 : 2;
-      scores.c6 = 3;
 
       applyScores(scores);
-    }
-
-    function fallbackEvaluate() {
-      applyScores({ c1: 3, c2: 3, c3: 3, c4: 3, c5: 3, c6: 3 });
     }
 
     function applyScores(scores) {
@@ -375,7 +517,6 @@
       document.getElementById('totalScore').textContent = `${sum} / 30`;
     }
 
-    // Excel Export
     function exportExcel() {
       const observer = document.getElementById('observerName').value || 'N/A';
       const performer = document.getElementById('performerName').value || 'N/A';
@@ -394,7 +535,11 @@
       });
 
       rowData.push([]);
-      rowData.push(["Observer Notes", document.getElementById('observerNotes').value]);
+      rowData.push(["Matched Strength 1", document.getElementById('sSkill1').value, "Impact 1", document.getElementById('sImpact1').value]);
+      rowData.push(["Matched Strength 2", document.getElementById('sSkill2').value, "Impact 2", document.getElementById('sImpact2').value]);
+      rowData.push(["Matched Improvement", document.getElementById('impSkill').value, "Impact", document.getElementById('impImpact').value]);
+      rowData.push([]);
+      rowData.push(["Observer Coaching Notes", document.getElementById('observerNotes').value]);
       rowData.push(["Performer Notes", document.getElementById('performerNotes').value]);
 
       const ws = XLSX.utils.aoa_to_sheet(rowData);
