@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Netball Shooting Skill Analyzer & Peer Evaluator (MOE E21CC)</title>
+  <title>Netball AI Analyzer & 2-Way Peer Evaluation (MOE E21CC)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- SheetJS for Excel Export -->
@@ -14,34 +14,34 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
   <style>
     .glass-card {
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(10px);
     }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 font-sans pb-12">
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans pb-16">
 
   <!-- Header Section -->
   <header class="bg-indigo-700 text-white shadow-lg mb-6 py-6 px-4">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold flex items-center gap-2">
-          <span>🏀</span> Netball Shooting Skill Analyzer & Peer Evaluator
+          <span>🏀</span> Netball Shooting AI & 2-Way Peer Evaluator
         </h1>
-        <p class="text-indigo-200 text-sm mt-1">Peer Feedback & Technical Assessment (MOE E21CC Framework)</p>
+        <p class="text-indigo-200 text-sm mt-1">Interactive Co-Construction & Feedback (MOE E21CC Framework)</p>
       </div>
 
-      <!-- Student & Peer Assessor Info Form -->
-      <div class="flex flex-wrap items-center gap-3 bg-indigo-800/60 p-3 rounded-lg border border-indigo-500/30">
+      <!-- Student & Peer Assessor Info Form (CCI 4: Roles & Tasks) -->
+      <div class="flex flex-wrap items-center gap-3 bg-indigo-800/70 p-3 rounded-lg border border-indigo-500/30">
         <div>
-          <label class="block text-xs text-indigo-200 font-medium mb-1">Shooter's Name</label>
-          <input type="text" id="studentName" placeholder="e.g. Jane Doe" 
-            class="px-3 py-1.5 rounded bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 w-36 md:w-40">
+          <label class="block text-xs text-indigo-200 font-medium mb-1">🎭 Performer (Shooter)</label>
+          <input type="text" id="performerName" placeholder="e.g. Jane Doe" 
+            class="px-3 py-1.5 rounded bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 w-36">
         </div>
         <div>
-          <label class="block text-xs text-indigo-200 font-medium mb-1">Peer Assessor</label>
-          <input type="text" id="peerName" placeholder="e.g. Sarah Tan" 
-            class="px-3 py-1.5 rounded bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 w-36 md:w-40">
+          <label class="block text-xs text-indigo-200 font-medium mb-1">📹 Observer (Videoer/Coach)</label>
+          <input type="text" id="observerName" placeholder="e.g. Sarah Tan" 
+            class="px-3 py-1.5 rounded bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 w-36">
         </div>
         <div>
           <label class="block text-xs text-indigo-200 font-medium mb-1">Class</label>
@@ -55,11 +55,13 @@
   <!-- Main Content Layout -->
   <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-    <!-- LEFT COLUMN: Video Upload & Display (7 cols) -->
-    <section class="lg:col-span-7 flex flex-col gap-4">
+    <!-- LEFT COLUMN: Video Upload, Player & Technical Analysis (7 cols) -->
+    <section class="lg:col-span-7 flex flex-col gap-6">
+      
+      <!-- Video Player Card -->
       <div class="glass-card rounded-xl p-5 shadow-sm border border-slate-200">
         <h2 class="text-lg font-bold text-slate-700 mb-3 flex items-center justify-between">
-          <span>1. Upload & View Shot Video</span>
+          <span>1. Video Upload & AI Feature Detection</span>
           <span id="aiStatusBadge" class="text-xs px-2.5 py-1 rounded-full bg-slate-200 text-slate-600 font-normal">AI Ready</span>
         </h2>
 
@@ -71,7 +73,7 @@
             hover:file:bg-indigo-100 cursor-pointer">
         </div>
 
-        <!-- Video Player / Overlay Canvas container -->
+        <!-- Video Player / Overlay Canvas -->
         <div class="relative aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center border border-slate-300 shadow-inner">
           <video id="videoElement" class="hidden" playsinline controls></video>
           <canvas id="outputCanvas" class="w-full h-full object-contain"></canvas>
@@ -80,20 +82,20 @@
             <svg class="w-12 h-12 mb-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
             </svg>
-            <p class="font-medium text-sm">No video uploaded yet</p>
-            <p class="text-xs text-slate-500 mt-1">Upload a netball shooting video to begin AI feature detection</p>
+            <p class="font-medium text-sm">Observer: Upload performer's video clip here</p>
+            <p class="text-xs text-slate-500 mt-1">(Ensure side-profile view for best pose estimation)</p>
           </div>
         </div>
 
         <!-- Progress Bar & AI Process Button -->
         <div class="mt-4 flex flex-col gap-3">
           <button id="processBtn" disabled class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg shadow transition flex items-center justify-center gap-2">
-            <span>✨ Run AI Pose & Feature Detection</span>
+            <span>✨ Run AI Pose & Technical Analysis</span>
           </button>
           
           <div id="progressContainer" class="hidden w-full">
             <div class="flex justify-between text-xs text-slate-600 mb-1">
-              <span>Analyzing pose landmarks...</span>
+              <span>Scanning video & verifying data accuracy... (CCI 5)</span>
               <span id="progressText">0%</span>
             </div>
             <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
@@ -102,20 +104,32 @@
           </div>
         </div>
       </div>
+
+      <!-- CCI 6 Ethical Guidelines Reminder -->
+      <div class="bg-slate-800 text-slate-200 rounded-xl p-4 text-xs space-y-1 shadow">
+        <p class="font-semibold text-amber-400 flex items-center gap-1">
+          <span>🔒</span> CCI 6: Responsible & Ethical Digital Information Sharing
+        </p>
+        <p>• All recorded videos and digital data must be used strictly for peer learning and PE feedback.</p>
+        <p>• Always seek your partner's consent before recording and treat video feedback with respect and care.</p>
+      </div>
+
     </section>
 
-    <!-- RIGHT COLUMN: Netball Checklist, Scores & Peer Feedback (5 cols) -->
-    <section class="lg:col-span-5 flex flex-col gap-4">
+    <!-- RIGHT COLUMN: Checklist, Total Score & 2-Way E21CC Dialogue (5 cols) -->
+    <section class="lg:col-span-5 flex flex-col gap-6">
+      
+      <!-- Technical Checklist Card -->
       <div class="glass-card rounded-xl p-5 shadow-sm border border-slate-200">
         <div class="flex items-center justify-between mb-4 border-b pb-3">
-          <h2 class="text-lg font-bold text-slate-800">2. Technical Checklist</h2>
+          <h2 class="text-lg font-bold text-slate-800">2. Technical Assessment</h2>
           <button id="exportBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-3 py-1.5 rounded shadow flex items-center gap-1.5 transition">
             <span>📥 Export Excel</span>
           </button>
         </div>
 
         <!-- Checklist Items Container -->
-        <div class="space-y-4 max-h-[420px] overflow-y-auto pr-1">
+        <div class="space-y-4 max-h-[380px] overflow-y-auto pr-1">
 
           <!-- STAGE 1 -->
           <div class="border rounded-lg p-3 bg-slate-50">
@@ -142,7 +156,6 @@
           <div class="border rounded-lg p-3 bg-slate-50 space-y-3">
             <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider block">Stage 2: Setup & Ball Holding</span>
             
-            <!-- Feature 2.1 -->
             <div class="flex items-start justify-between gap-3 border-b pb-2">
               <div class="flex-1">
                 <p class="text-sm font-medium text-slate-800">Non-shooting hand on side & shooting hand under ball</p>
@@ -160,7 +173,6 @@
               </div>
             </div>
 
-            <!-- Feature 2.2 -->
             <div class="flex items-start justify-between gap-3 border-b pb-2">
               <div class="flex-1">
                 <p class="text-sm font-medium text-slate-800">Fingers open, ball resting high above head</p>
@@ -178,10 +190,9 @@
               </div>
             </div>
 
-            <!-- Feature 2.3 -->
             <div class="flex items-start justify-between gap-3">
               <div class="flex-1">
-                <p class="text-sm font-medium text-slate-800">Shooting arm elbow at right angle pointing towards net</p>
+                <p class="text-sm font-medium text-slate-800">Shooting arm elbow at right angle pointing to net</p>
                 <span id="s2_3_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
               </div>
               <div class="flex flex-col items-end gap-1">
@@ -201,7 +212,6 @@
           <div class="border rounded-lg p-3 bg-slate-50 space-y-3">
             <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider block">Stage 3: Execution & Follow Through</span>
             
-            <!-- Feature 3.1 -->
             <div class="flex items-start justify-between gap-3 border-b pb-2">
               <div class="flex-1">
                 <p class="text-sm font-medium text-slate-800">Bend knees and straighten arm when shooting</p>
@@ -219,7 +229,6 @@
               </div>
             </div>
 
-            <!-- Feature 3.2 -->
             <div class="flex items-start justify-between gap-3">
               <div class="flex-1">
                 <p class="text-sm font-medium text-slate-800">Flick wrist on follow through</p>
@@ -254,26 +263,69 @@
 
       </div>
 
-      <!-- MOE E21CC PEER FEEDBACK CARD -->
-      <div class="glass-card rounded-xl p-5 shadow-sm border border-slate-200">
-        <h3 class="text-md font-bold text-slate-800 mb-2 flex items-center gap-2">
-          <span>🤝</span> MOE E21CC Peer Feedback & Discussion
-        </h3>
-        <p class="text-xs text-slate-500 mb-3">
-          <strong>Communication & Collaboration:</strong> Review the AI data with your partner, discuss key strengths, and agree on 1 action item to improve.
-        </p>
+      <!-- 2-WAY MOE E21CC DIALOGUE FRAMEWORK CARD -->
+      <div class="glass-card rounded-xl p-5 shadow-sm border border-indigo-200 bg-indigo-50/30 space-y-4">
+        
+        <div class="border-b border-indigo-200 pb-2 flex items-center justify-between">
+          <h3 class="text-md font-bold text-indigo-900 flex items-center gap-2">
+            <span>🗣️</span> 2-Way E21CC Co-Construction Dialogue
+          </h3>
+          <span class="text-[10px] font-semibold uppercase px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full">CCI 1, 2 & 3</span>
+        </div>
 
-        <div class="space-y-3 text-xs">
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">🌟 Identified Strengths (What went well):</label>
-            <textarea id="feedbackStrengths" rows="2" class="w-full p-2 border rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Great knee dip and elbow angle prior to release!"></textarea>
+        <!-- STEP A: OBSERVER FEEDBACK (CCI 1.3 & CCI 2.3) -->
+        <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-xs text-indigo-800">
+              Step 1 (Observer → Performer): Empathetic Feedback & AI Synthesis
+            </span>
+            <span class="text-[10px] text-slate-400">CCI 1.3 | CCI 2.3</span>
           </div>
+          <p class="text-[11px] text-slate-500">
+            <em>Guide for Observer:</em> Deliver feedback respectfully. Use empathetic sentence starters like <em>"I noticed from the video AI that..."</em> or <em>"Your strength was..."</em>.
+          </p>
 
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">🎯 Area for Growth (Action item to work on together):</label>
-            <textarea id="feedbackImprovements" rows="2" class="w-full p-2 border rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Remember to fully extend arm and hold follow-through flick."></textarea>
+          <div class="space-y-2 text-xs pt-1">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">🌟 Identified Strengths (What went well):</label>
+              <textarea id="observerStrengths" rows="2" class="w-full p-2 border rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500" placeholder="e.g. You maintained a strong shoulder-width stance and bent knees well!"></textarea>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">🎯 Co-Constructed Goal (1 specific area to refine):</label>
+              <textarea id="observerGoal" rows="2" class="w-full p-2 border rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Let's work on pointing your elbow to 90 degrees before releasing."></textarea>
+            </div>
           </div>
         </div>
+
+        <!-- STEP B: PERFORMER RESPONSE & AGREEMENT (CCI 3.3 & CCI 5.3) -->
+        <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs space-y-3">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-xs text-indigo-800">
+              Step 2 (Performer → Observer): Reflection & Dialogue Response
+            </span>
+            <span class="text-[10px] text-slate-400">CCI 3.3 | CCI 5.3</span>
+          </div>
+          <p class="text-[11px] text-slate-500">
+            <em>Guide for Performer:</em> Cross-reference the AI video with your actual physical feel. Manage disagreements constructively and communicate your perspective.
+          </p>
+
+          <!-- Agreement Selector -->
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1 text-xs">Do you agree with the AI & Observer assessment?</label>
+            <select id="performerAgreement" class="w-full p-2 text-xs border rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500 font-medium">
+              <option value="Agree Completely">✅ Agree Completely: I felt this during my shot and see it in the video.</option>
+              <option value="Partially Agree">🤝 Partially Agree: I agree on some points, but felt my execution was different.</option>
+              <option value="Respectfully Disagree">💬 Respectfully Disagree: I think the camera angle or video didn't capture my full movement.</option>
+            </select>
+          </div>
+
+          <!-- Performer Voice / Notes -->
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1 text-xs">Performer's Perspective / Action Plan:</label>
+            <textarea id="performerNotes" rows="2" class="w-full p-2 border rounded text-xs bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500" placeholder="e.g. I agree about the elbow, but during the shot I felt balanced. Next round I will focus on holding my follow-through flick longer."></textarea>
+          </div>
+        </div>
+
       </div>
 
     </section>
@@ -343,7 +395,6 @@
       }
     }
 
-    // Set state & update score dropdown automatically
     function updateFeatureState(id, state, autoScore = null) {
       featureStates[id] = state;
       const btn = document.getElementById(`btn_${id}`);
@@ -365,7 +416,6 @@
       calculateTotalScore();
     }
 
-    // Manual cycle toggle button: Neutral -> Present -> Absent -> Neutral
     function toggleFeature(id) {
       const currentState = featureStates[id];
       if (currentState === 'neutral') {
@@ -582,7 +632,7 @@
         document.getElementById('s3_1_status').innerText = `Good knee dip & extension (${Math.round(armExt)}°)`;
       } else if (armExt > 150) {
         updateFeatureState('item_s3_1', 'neutral', '3');
-        document.getElementById('s3_1_status').innerText = `Partial extension (${Math.round(armExt)}°)`;
+        document.getElementById('s3_3_status').innerText = `Partial extension (${Math.round(armExt)}°)`;
       } else if (armExt > 135) {
         updateFeatureState('item_s3_1', 'absent', '2');
         document.getElementById('s3_1_status').innerText = `Limited arm extension (${Math.round(armExt)}°)`;
@@ -610,46 +660,46 @@
       }
     }
 
-    // Generate Auto Peer Feedback Prompts for E21CC Collaboration
+    // Auto-generate empathetic observer coaching prompts (CCI 1.3 & 2.3)
     function generateAutoPeerFeedback() {
       let strengths = [];
       let growth = [];
 
-      if (parseInt(document.getElementById('score_item_s1').value) >= 4) strengths.push("balanced shoulder-width stance");
-      else growth.push("adjusting stance to be shoulder-width apart for better balance");
+      if (parseInt(document.getElementById('score_item_s1').value) >= 4) strengths.push("a balanced shoulder-width stance");
+      else growth.push("adjusting stance width to shoulder-width apart");
 
-      if (parseInt(document.getElementById('score_item_s2_2').value) >= 4) strengths.push("holding the ball high above head");
-      else growth.push("raising the ball higher above the head before release");
+      if (parseInt(document.getElementById('score_item_s2_2').value) >= 4) strengths.push("holding the ball high above your head");
+      else growth.push("raising the ball higher above head level before starting the shoot");
 
-      if (parseInt(document.getElementById('score_item_s2_3').value) >= 4) strengths.push("keeping shooting elbow at a clean right angle");
-      else growth.push("pointing elbow directly towards the net at a 90° angle");
+      if (parseInt(document.getElementById('score_item_s2_3').value) >= 4) strengths.push("keeping your shooting elbow at a clean right angle pointing to the net");
+      else growth.push("pointing your shooting elbow directly toward the ring at 90 degrees");
 
-      if (parseInt(document.getElementById('score_item_s3_1').value) >= 4) strengths.push("good knee bend and power transfer");
-      else growth.push("dipping knees deeper when releasing for additional shot height");
+      if (parseInt(document.getElementById('score_item_s3_1').value) >= 4) strengths.push("great knee dip and power transfer");
+      else growth.push("dipping your knees deeper during release to generate arc");
 
-      const sText = strengths.length > 0 ? `Great job on your ${strengths.join(" and ")}!` : "Good effort on uploading and reviewing your shot!";
-      const gText = growth.length > 0 ? `Let's focus on ${growth[0]} during our next practice session.` : "Keep maintaining this consistent technique!";
+      const sText = strengths.length > 0 ? `I noticed from the video AI that you executed ${strengths.join(" and ")} very well!` : "I noticed great effort in your shot execution!";
+      const gText = growth.length > 0 ? `To co-construct our goal, let's focus on ${growth[0]} in our next trial.` : "Let's work together to maintain this consistent technique!";
 
-      document.getElementById('feedbackStrengths').value = sText;
-      document.getElementById('feedbackImprovements').value = gText;
+      document.getElementById('observerStrengths').value = sText;
+      document.getElementById('observerGoal').value = gText;
     }
 
-    // Export Excel Functionality using SheetJS (Includes E21CC Peer Feedback)
+    // Export Excel Functionality with full E21CC 2-Way Dialogue
     document.getElementById('exportBtn').addEventListener('click', () => {
-      const name = document.getElementById('studentName').value.trim() || 'Unassigned Shooter';
-      const peer = document.getElementById('peerName').value.trim() || 'Unassigned Peer';
+      const performer = document.getElementById('performerName').value.trim() || 'Unassigned Performer';
+      const observer = document.getElementById('observerName').value.trim() || 'Unassigned Observer';
       const studentClass = document.getElementById('studentClass').value.trim() || 'N/A';
       const totalScore = document.getElementById('totalScoreDisplay').innerText;
       const rating = document.getElementById('scoreRatingText').innerText;
 
       const data = [
-        ["Netball Shooting Skill & Peer Evaluation Report (MOE E21CC)"],
-        ["Shooter Name", name],
-        ["Evaluated By (Peer Assessor)", peer],
+        ["Netball AI Assessment & 2-Way E21CC Peer Dialogue Report"],
+        ["Performer (Shooter)", performer],
+        ["Observer (Videoer/Coach)", observer],
         ["Class", studentClass],
         ["Assessment Date", new Date().toLocaleDateString()],
         ["Total Score", `${totalScore} / 30`],
-        ["Performance Tier", rating],
+        ["Performance Level", rating],
         [],
         ["Stage", "Skill Feature Criteria", "AI Detection Status", "Score (1-5)"],
         ["Stage 1", "Feet shoulder width apart", featureStates.item_s1.toUpperCase(), document.getElementById('score_item_s1').value],
@@ -659,22 +709,23 @@
         ["Stage 3", "Bend knees and straighten arm when shooting", featureStates.item_s3_1.toUpperCase(), document.getElementById('score_item_s3_1').value],
         ["Stage 3", "Flick wrist on follow through", featureStates.item_s3_2.toUpperCase(), document.getElementById('score_item_s3_2').value],
         [],
-        ["MOE E21CC Peer Feedback & Collaboration"],
-        ["Identified Strengths", document.getElementById('feedbackStrengths').value],
-        ["Areas for Improvement", document.getElementById('feedbackImprovements').value]
+        ["MOE E21CC 2-Way Dialogue Record"],
+        ["CCI 1.3 & 2.3 - Observer's Strengths Feedback", document.getElementById('observerStrengths').value],
+        ["CCI 1.3 & 2.3 - Co-Constructed Goal", document.getElementById('observerGoal').value],
+        ["CCI 3.3 - Performer's Agreement Status", document.getElementById('performerAgreement').value],
+        ["CCI 3.3 & 5.3 - Performer's Reflection / Action Plan", document.getElementById('performerNotes').value]
       ];
 
       const ws = XLSX.utils.aoa_to_sheet(data);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Peer Evaluation");
+      XLSX.utils.book_append_sheet(wb, ws, "2-Way E21CC Dialogue");
 
-      ws['!cols'] = [{ wch: 18 }, { wch: 50 }, { wch: 20 }, { wch: 12 }];
+      ws['!cols'] = [{ wch: 22 }, { wch: 55 }, { wch: 20 }, { wch: 12 }];
 
-      const fileName = `${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_peer_evaluation.xlsx`;
+      const fileName = `${performer.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_netball_e21cc_dialogue.xlsx`;
       XLSX.writeFile(wb, fileName);
     });
 
-    // Initial score calculation on page load
     calculateTotalScore();
   </script>
 </body>
