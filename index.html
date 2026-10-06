@@ -209,4 +209,401 @@
           </div>
 
           <!-- STAGE 3 -->
-          <div class="border rounded-lg
+          <div class="border rounded-lg p-3 bg-slate-50 space-y-3">
+            <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider block">Stage 3: Execution & Follow Through</span>
+            
+            <!-- Feature 3.1 -->
+            <div class="flex items-start justify-between gap-3 border-b pb-2">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-slate-800">Bend knees and straighten arm when shooting</p>
+                <span id="s3_1_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
+              </div>
+              <div class="flex flex-col items-end gap-1">
+                <button onclick="toggleFeature('item_s3_1')" id="btn_item_s3_1" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
+                <select id="score_item_s3_1" class="text-xs border rounded px-1.5 py-0.5 bg-white">
+                  <option value="5">Score: 5 (Excellent)</option>
+                  <option value="4">Score: 4 (Good)</option>
+                  <option value="3" selected>Score: 3 (Neutral)</option>
+                  <option value="2">Score: 2 (Needs Work)</option>
+                  <option value="1">Score: 1 (Poor)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Feature 3.2 -->
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-slate-800">Flick wrist on follow through</p>
+                <span id="s3_2_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
+              </div>
+              <div class="flex flex-col items-end gap-1">
+                <button onclick="toggleFeature('item_s3_2')" id="btn_item_s3_2" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
+                <select id="score_item_s3_2" class="text-xs border rounded px-1.5 py-0.5 bg-white">
+                  <option value="5">Score: 5 (Excellent)</option>
+                  <option value="4">Score: 4 (Good)</option>
+                  <option value="3" selected>Score: 3 (Neutral)</option>
+                  <option value="2">Score: 2 (Needs Work)</option>
+                  <option value="1">Score: 1 (Poor)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const featureStates = {
+      item_s1: 'neutral',
+      item_s2_1: 'neutral',
+      item_s2_2: 'neutral',
+      item_s2_3: 'neutral',
+      item_s3_1: 'neutral',
+      item_s3_2: 'neutral'
+    };
+
+    const videoInput = document.getElementById('videoInput');
+    const videoElement = document.getElementById('videoElement');
+    const outputCanvas = document.getElementById('outputCanvas');
+    const canvasCtx = outputCanvas.getContext('2d');
+    const processBtn = document.getElementById('processBtn');
+    const placeholderText = document.getElementById('placeholderText');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+
+    let poseDetector;
+    let isProcessing = false;
+
+    // Initialize MediaPipe Pose
+    function initMediaPipe() {
+      poseDetector = new Pose({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+      });
+      poseDetector.setOptions({
+        modelComplexity: 1,
+        smoothLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+
+      poseDetector.onResults(onPoseResults);
+    }
+    initMediaPipe();
+
+    // Set Playback Speed
+    function setSpeed(speed) {
+      if (videoElement) {
+        videoElement.playbackRate = speed;
+      }
+      document.querySelectorAll('.speed-btn').forEach(btn => {
+        if (parseFloat(btn.innerText) === speed || (speed === 1.0 && btn.innerText.includes('1.0x'))) {
+          btn.className = 'speed-btn px-2 py-1 rounded bg-indigo-600 text-white font-medium';
+        } else {
+          btn.className = 'speed-btn px-2 py-1 rounded bg-white border border-slate-300 hover:bg-slate-100 font-medium';
+        }
+      });
+    }
+
+    // Set state & update auto score
+    function updateFeatureState(id, state, autoScore = null) {
+      featureStates[id] = state;
+      const btn = document.getElementById(`btn_${id}`);
+      const select = document.getElementById(`score_${id}`);
+
+      if (state === 'present') {
+        btn.className = 'px-2.5 py-1 text-xs font-bold rounded bg-emerald-100 text-emerald-800 border border-emerald-300';
+        btn.innerHTML = '✅ Present';
+        if (autoScore) select.value = autoScore;
+      } else if (state === 'absent') {
+        btn.className = 'px-2.5 py-1 text-xs font-bold rounded bg-rose-100 text-rose-800 border border-rose-300';
+        btn.innerHTML = '❌ Absent';
+        if (autoScore) select.value = autoScore;
+      } else {
+        btn.className = 'px-2.5 py-1 text-xs font-bold rounded bg-amber-100 text-amber-800 border border-amber-300';
+        btn.innerHTML = '➖ Neutral';
+        select.value = "3";
+      }
+    }
+
+    // Toggle button manually
+    function toggleFeature(id) {
+      const currentState = featureStates[id];
+      if (currentState === 'neutral') {
+        updateFeatureState(id, 'present', '5');
+      } else if (currentState === 'present') {
+        updateFeatureState(id, 'absent', '1');
+      } else {
+        updateFeatureState(id, 'neutral', '3');
+      }
+    }
+
+    // Video Upload Handler
+    videoInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+      videoElement.src = url;
+      placeholderText.classList.add('hidden');
+
+      videoElement.onloadeddata = () => {
+        outputCanvas.width = videoElement.videoWidth || 640;
+        outputCanvas.height = videoElement.videoHeight || 360;
+        processBtn.disabled = false;
+        document.getElementById('aiStatusBadge').innerText = "Video Loaded";
+      };
+    });
+
+    // Angle calculation
+    function calculateAngle(A, B, C) {
+      const rad = Math.atan2(C.y - B.y, C.x - B.x) - Math.atan2(A.y - B.y, A.x - B.x);
+      let angle = Math.abs((rad * 180.0) / Math.PI);
+      if (angle > 180.0) angle = 360 - angle;
+      return angle;
+    }
+
+    let detectedMetrics = {
+      feetWidthRatioMax: 0,
+      minElbowAngle: 180,
+      maxHandHeightRatio: -1,
+      kneeBendDetected: false,
+      elbowExtensionMax: 0
+    };
+
+    function onPoseResults(results) {
+      canvasCtx.save();
+      canvasCtx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+
+      if (results.poseLandmarks) {
+        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#6366F1', lineWidth: 3 });
+        drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#10B981', lineWidth: 1, radius: 3 });
+
+        const lm = results.poseLandmarks;
+        const lShoulder = lm[11], rShoulder = lm[12];
+        const lElbow = lm[13], rElbow = lm[14];
+        const lWrist = lm[15], rWrist = lm[16];
+        const lAnkle = lm[27], rAnkle = lm[28];
+        const lKnee = lm[25], rKnee = lm[26];
+        const lHip = lm[23], rHip = lm[24];
+
+        // 1. Feet Width
+        const shoulderDist = Math.hypot(rShoulder.x - lShoulder.x, rShoulder.y - lShoulder.y);
+        const feetDist = Math.hypot(rAnkle.x - lAnkle.x, rAnkle.y - lAnkle.y);
+        if (shoulderDist > 0) {
+          const ratio = feetDist / shoulderDist;
+          if (ratio > detectedMetrics.feetWidthRatioMax) detectedMetrics.feetWidthRatioMax = ratio;
+        }
+
+        // 2. Elbow Angle
+        const rightElbowAngle = calculateAngle(rShoulder, rElbow, rWrist);
+        const leftElbowAngle = calculateAngle(lShoulder, lElbow, lWrist);
+        const shootingElbowAngle = Math.min(rightElbowAngle, leftElbowAngle);
+        if (shootingElbowAngle < detectedMetrics.minElbowAngle) detectedMetrics.minElbowAngle = shootingElbowAngle;
+
+        // 3. Ball above head
+        const avgWristY = (lWrist.y + rWrist.y) / 2;
+        const avgNoseY = lm[0].y;
+        if (avgNoseY - avgWristY > detectedMetrics.maxHandHeightRatio) {
+          detectedMetrics.maxHandHeightRatio = avgNoseY - avgWristY;
+        }
+
+        // 4. Knee Bend & Extension
+        const rKneeAngle = calculateAngle(rHip, rKnee, rAnkle);
+        if (rKneeAngle < 155) detectedMetrics.kneeBendDetected = true;
+
+        const maxArmExt = Math.max(rightElbowAngle, leftElbowAngle);
+        if (maxArmExt > detectedMetrics.elbowExtensionMax) detectedMetrics.elbowExtensionMax = maxArmExt;
+      }
+      canvasCtx.restore();
+    }
+
+    // Process Video Frame-by-Frame during continuous playback
+    processBtn.addEventListener('click', async () => {
+      if (!videoElement.src || isProcessing) return;
+
+      isProcessing = true;
+      processBtn.disabled = true;
+      progressContainer.classList.remove('hidden');
+
+      detectedMetrics = {
+        feetWidthRatioMax: 0,
+        minElbowAngle: 180,
+        maxHandHeightRatio: -1,
+        kneeBendDetected: false,
+        elbowExtensionMax: 0
+      };
+
+      videoElement.currentTime = 0;
+      videoElement.play();
+
+      async function processFrame() {
+        if (videoElement.paused || videoElement.ended) {
+          if (videoElement.ended) {
+            evaluateRules();
+            progressContainer.classList.add('hidden');
+            processBtn.disabled = false;
+            isProcessing = false;
+            document.getElementById('aiStatusBadge').innerText = "Analysis Complete";
+            document.getElementById('aiStatusBadge').className = "text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-semibold";
+          }
+          return;
+        }
+
+        await poseDetector.send({ image: videoElement });
+
+        const percent = Math.min(100, Math.round((videoElement.currentTime / videoElement.duration) * 100));
+        progressBar.style.width = `${percent}%`;
+        progressText.innerText = `${percent}%`;
+
+        requestAnimationFrame(processFrame);
+      }
+
+      processFrame();
+    });
+
+    // Rule Evaluation
+    function evaluateRules() {
+      const feetRatio = detectedMetrics.feetWidthRatioMax;
+      if (feetRatio >= 0.85 && feetRatio <= 1.25) {
+        updateFeatureState('item_s1', 'present', '5');
+        document.getElementById('s1_status').innerText = `Ideal stance width (${feetRatio.toFixed(2)}x shoulder width)`;
+      } else if (feetRatio >= 0.75 && feetRatio <= 1.35) {
+        updateFeatureState('item_s1', 'present', '4');
+        document.getElementById('s1_status').innerText = `Acceptable stance width (${feetRatio.toFixed(2)}x shoulder width)`;
+      } else if (feetRatio >= 0.65 && feetRatio <= 1.45) {
+        updateFeatureState('item_s1', 'neutral', '3');
+        document.getElementById('s1_status').innerText = `Borderline stance width (${feetRatio.toFixed(2)}x shoulder width)`;
+      } else if (feetRatio < 0.5 || feetRatio > 1.6) {
+        updateFeatureState('item_s1', 'absent', '1');
+        document.getElementById('s1_status').innerText = `Poor stance width (${feetRatio.toFixed(2)}x shoulder width)`;
+      } else {
+        updateFeatureState('item_s1', 'absent', '2');
+        document.getElementById('s1_status').innerText = `Suboptimal stance width (${feetRatio.toFixed(2)}x shoulder width)`;
+      }
+
+      const handHt = detectedMetrics.maxHandHeightRatio;
+      if (handHt > 0.12) {
+        updateFeatureState('item_s2_1', 'present', '5');
+        document.getElementById('s2_1_status').innerText = "Excellent hand placement under/side ball";
+      } else if (handHt > 0.06) {
+        updateFeatureState('item_s2_1', 'present', '4');
+        document.getElementById('s2_1_status').innerText = "Good hand placement";
+      } else if (handHt > 0.02) {
+        updateFeatureState('item_s2_1', 'neutral', '3');
+        document.getElementById('s2_1_status').innerText = "Fair hand position";
+      } else if (handHt > -0.05) {
+        updateFeatureState('item_s2_1', 'absent', '2');
+        document.getElementById('s2_1_status').innerText = "Low hand placement";
+      } else {
+        updateFeatureState('item_s2_1', 'absent', '1');
+        document.getElementById('s2_1_status').innerText = "Poor hand positioning";
+      }
+
+      if (handHt > 0.15) {
+        updateFeatureState('item_s2_2', 'present', '5');
+        document.getElementById('s2_2_status').innerText = "Ball held high above head";
+      } else if (handHt > 0.08) {
+        updateFeatureState('item_s2_2', 'present', '4');
+        document.getElementById('s2_2_status').innerText = "Ball above head level";
+      } else if (handHt > 0.03) {
+        updateFeatureState('item_s2_2', 'neutral', '3');
+        document.getElementById('s2_2_status').innerText = "Ball at head height";
+      } else if (handHt > -0.05) {
+        updateFeatureState('item_s2_2', 'absent', '2');
+        document.getElementById('s2_2_status').innerText = "Ball held too low";
+      } else {
+        updateFeatureState('item_s2_2', 'absent', '1');
+        document.getElementById('s2_2_status').innerText = "Ball below chin/chest level";
+      }
+
+      const elbowDeg = Math.round(detectedMetrics.minElbowAngle);
+      if (elbowDeg >= 83 && elbowDeg <= 97) {
+        updateFeatureState('item_s2_3', 'present', '5');
+        document.getElementById('s2_3_status').innerText = `Perfect right-angle elbow (${elbowDeg}°)`;
+      } else if (elbowDeg >= 73 && elbowDeg <= 107) {
+        updateFeatureState('item_s2_3', 'present', '4');
+        document.getElementById('s2_3_status').innerText = `Good elbow angle (${elbowDeg}°)`;
+      } else if (elbowDeg >= 65 && elbowDeg <= 115) {
+        updateFeatureState('item_s2_3', 'neutral', '3');
+        document.getElementById('s2_3_status').innerText = `Moderate elbow angle (${elbowDeg}°)`;
+      } else if (elbowDeg >= 55 && elbowDeg <= 125) {
+        updateFeatureState('item_s2_3', 'absent', '2');
+        document.getElementById('s2_3_status').innerText = `Suboptimal elbow angle (${elbowDeg}°)`;
+      } else {
+        updateFeatureState('item_s2_3', 'absent', '1');
+        document.getElementById('s2_3_status').innerText = `Incorrect elbow position (${elbowDeg}°)`;
+      }
+
+      const armExt = detectedMetrics.elbowExtensionMax;
+      if (detectedMetrics.kneeBendDetected && armExt > 168) {
+        updateFeatureState('item_s3_1', 'present', '5');
+        document.getElementById('s3_1_status').innerText = `Full knee dip & complete extension (${Math.round(armExt)}°)`;
+      } else if (detectedMetrics.kneeBendDetected && armExt > 158) {
+        updateFeatureState('item_s3_1', 'present', '4');
+        document.getElementById('s3_1_status').innerText = `Good knee dip & extension (${Math.round(armExt)}°)`;
+      } else if (armExt > 150) {
+        updateFeatureState('item_s3_1', 'neutral', '3');
+        document.getElementById('s3_1_status').innerText = `Partial extension (${Math.round(armExt)}°)`;
+      } else if (armExt > 135) {
+        updateFeatureState('item_s3_1', 'absent', '2');
+        document.getElementById('s3_1_status').innerText = `Limited arm extension (${Math.round(armExt)}°)`;
+      } else {
+        updateFeatureState('item_s3_1', 'absent', '1');
+        document.getElementById('s3_1_status').innerText = `No knee bend or extension detected`;
+      }
+
+      if (armExt > 168) {
+        updateFeatureState('item_s3_2', 'present', '5');
+        document.getElementById('s3_2_status').innerText = "Excellent follow-through flick";
+      } else if (armExt > 160) {
+        updateFeatureState('item_s3_2', 'present', '4');
+        document.getElementById('s3_2_status').innerText = "Good follow-through";
+      } else if (armExt > 150) {
+        updateFeatureState('item_s3_2', 'neutral', '3');
+        document.getElementById('s3_2_status').innerText = "Moderate follow-through";
+      } else if (armExt > 135) {
+        updateFeatureState('item_s3_2', 'absent', '2');
+        document.getElementById('s3_2_status').innerText = "Short follow-through";
+      } else {
+        updateFeatureState('item_s3_2', 'absent', '1');
+        document.getElementById('s3_2_status').innerText = "No wrist flick/follow-through";
+      }
+    }
+
+    // Export Excel Function
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const name = document.getElementById('studentName').value.trim() || 'Unassigned Student';
+      const studentClass = document.getElementById('studentClass').value.trim() || 'N/A';
+
+      const data = [
+        ["Netball Shooting Analysis Report"],
+        ["Student Name", name],
+        ["Class / Section", studentClass],
+        ["Date of Assessment", new Date().toLocaleDateString()],
+        [],
+        ["Stage", "Skill Feature Criteria", "AI Detection Status", "Score (1-5)"],
+        
+        ["Stage 1", "Feet shoulder width apart", featureStates.item_s1.toUpperCase(), document.getElementById('score_item_s1').value],
+        ["Stage 2", "Non-shooting hand on side & shooting hand under ball", featureStates.item_s2_1.toUpperCase(), document.getElementById('score_item_s2_1').value],
+        ["Stage 2", "Fingers open, resting ball high above head", featureStates.item_s2_2.toUpperCase(), document.getElementById('score_item_s2_2').value],
+        ["Stage 2", "Shooting arm elbow at right angle pointing to net", featureStates.item_s2_3.toUpperCase(), document.getElementById('score_item_s2_3').value],
+        ["Stage 3", "Bend knees and straighten arm when shooting", featureStates.item_s3_1.toUpperCase(), document.getElementById('score_item_s3_1').value],
+        ["Stage 3", "Flick wrist on follow through", featureStates.item_s3_2.toUpperCase(), document.getElementById('score_item_s3_2').value]
+      ];
+
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Analysis Result");
+
+      ws['!cols'] = [{ wch: 12 }, { wch: 50 }, { wch: 20 }, { wch: 12 }];
+
+      const fileName = `${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_netball_analysis.xlsx`;
+      XLSX.writeFile(wb, fileName);
+    });
+  </script>
+</body>
+</html>
