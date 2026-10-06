@@ -3,794 +3,660 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Netball AI Analyzer & 2-Way Peer Evaluation (MOE E21CC)</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- SheetJS for Excel Export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <!-- Google MediaPipe Libraries -->
+  <title>Netball Shooting Pose Analysis & E21CC Co-Construction Dialogue</title>
+
+  <!-- Google MediaPipe & SheetJS CDNs -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <style>
-    .glass-card {
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(10px);
+    :root {
+      --primary-color: #0056b3;
+      --secondary-color: #0284c7;
+      --success-color: #28a745;
+      --danger-color: #dc3545;
+      --light-bg: #f8f9fa;
+      --border-color: #dee2e6;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 20px;
+      background-color: #f4f7f6;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h1, h2, h3, h4 {
+      color: #2c3e50;
+    }
+
+    .card {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 25px;
+      background-color: #fff;
+    }
+
+    .roles-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .form-group input {
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+
+    /* Video Canvas Styling */
+    .video-container {
+      position: relative;
+      width: 100%;
+      max-width: 640px;
+      margin: 15px auto;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    video, canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    /* Rubric Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #e9ecef;
+    }
+
+    select.score-select {
+      padding: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .total-score-box {
+      margin-top: 15px;
+      font-size: 1.2em;
+      font-weight: bold;
+      background: #e2e8f0;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: right;
+    }
+
+    /* Matching Interactive Grid */
+    .matching-section {
+      background-color: #f0f4f8;
+      border: 2px solid #cbd5e1;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+
+    .matching-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 15px;
+    }
+
+    .column-title {
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 10px;
+      color: #1e293b;
+    }
+
+    .match-box {
+      background: white;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 12px 15px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+      font-size: 0.95em;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .match-box:hover:not(.disabled) {
+      border-color: var(--primary-color);
+      transform: translateY(-2px);
+    }
+
+    .match-box.selected {
+      background-color: #e0f2fe;
+      border-color: var(--secondary-color);
+      font-weight: bold;
+    }
+
+    .match-box.correct {
+      background-color: #dcfce7 !important;
+      border-color: var(--success-color) !important;
+      color: #15803d;
+      font-weight: bold;
+      cursor: default;
+    }
+
+    .match-box.incorrect {
+      background-color: #fee2e2 !important;
+      border-color: var(--danger-color) !important;
+      color: #b91c1c;
+    }
+
+    .coaching-guide-box {
+      background-color: #eff6ff;
+      border-left: 5px solid var(--primary-color);
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 4px;
+      display: none;
+    }
+
+    .step-indicator {
+      font-weight: bold;
+      color: #475569;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1em;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #004085;
+    }
+
+    textarea {
+      width: 100%;
+      height: 80px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 10px;
+      box-sizing: border-box;
+      margin-top: 8px;
     }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 font-sans pb-16">
+<body>
 
-  <!-- Header Section -->
-  <header class="bg-indigo-700 text-white shadow-lg mb-6 py-6 px-4">
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-      <div>
-        <h1 class="text-2xl md:text-3xl font-bold flex items-center gap-2">
-          <span>🏀</span> Netball Shooting AI & 2-Way Peer Evaluator
-        </h1>
-        <p class="text-indigo-200 text-sm mt-1">Interactive Co-Construction & Feedback (MOE E21CC Framework)</p>
+<div class="container">
+  <h1>🏀 Netball Shooting Analysis & E21CC Co-Construction Dialogue</h1>
+
+  <!-- USER ROLES SETUP -->
+  <div class="card">
+    <h2>1. Student Pair Information</h2>
+    <div class="roles-grid">
+      <div class="form-group">
+        <label for="observer-name">Observer Name:</label>
+        <input type="text" id="observer-name" placeholder="Enter Observer Name">
       </div>
-
-      <!-- Student & Peer Assessor Info Form (CCI 4: Roles & Tasks) -->
-      <div class="flex flex-wrap items-center gap-3 bg-indigo-800/70 p-3 rounded-lg border border-indigo-500/30">
-        <div>
-          <label class="block text-xs text-indigo-200 font-medium mb-1">🎭 Performer (Shooter)</label>
-          <input type="text" id="performerName" placeholder="e.g. Jane Doe" 
-            class="px-3 py-1.5 rounded bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 w-36">
-        </div>
-        <div>
-          <label class="block text-xs text-indigo-200 font-medium mb-1">📹 Observer (Videoer/Coach)</label>
-          <input type="text" id="observerName" placeholder="e.g. Sarah Tan" 
-            class="px-3 py-1.5 rounded bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 w-36">
-        </div>
-        <div>
-          <label class="block text-xs text-indigo-200 font-medium mb-1">Class</label>
-          <input type="text" id="studentClass" placeholder="e.g. 4B" 
-            class="px-3 py-1.5 rounded bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 w-20">
-        </div>
+      <div class="form-group">
+        <label for="performer-name">Performer Name:</label>
+        <input type="text" id="performer-name" placeholder="Enter Performer Name">
       </div>
     </div>
-  </header>
+  </div>
 
-  <!-- Main Content Layout -->
-  <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <!-- VIDEO UPLOAD & AI ANALYSIS -->
+  <div class="card">
+    <h2>2. Upload Video for Pose Analysis</h2>
+    <input type="file" id="video-input" accept="video/*">
+    
+    <div class="video-container">
+      <video id="input-video" controls style="display:none;"></video>
+      <canvas id="output-canvas"></canvas>
+    </div>
+  </div>
 
-    <!-- LEFT COLUMN: Video Upload, Guidelines, Player & Technical Analysis (7 cols) -->
-    <section class="lg:col-span-7 flex flex-col gap-6">
-      
-      <!-- Video Player & Upload Card -->
-      <div class="glass-card rounded-xl p-5 shadow-sm border border-slate-200">
-        <h2 class="text-lg font-bold text-slate-700 mb-3 flex items-center justify-between">
-          <span>1. Video Recording & AI Feature Detection</span>
-          <span id="aiStatusBadge" class="text-xs px-2.5 py-1 rounded-full bg-slate-200 text-slate-600 font-normal">AI Ready</span>
-        </h2>
-
-        <!-- QUICK VIDEO RECORDING GUIDELINES -->
-        <div class="bg-amber-50/80 border border-amber-200/80 rounded-lg p-3 mb-4">
-          <p class="text-xs font-bold text-amber-900 mb-2 flex items-center gap-1.5">
-            <span>📹</span> Video Recording Quick Checklist (Observer Guidance):
-          </p>
-          <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-[11px] font-medium text-amber-950">
-            <div class="flex items-center gap-1 bg-white/80 px-2 py-1.5 rounded border border-amber-200">
-              <span>📐</span> <span>Side view</span>
-            </div>
-            <div class="flex items-center gap-1 bg-white/80 px-2 py-1.5 rounded border border-amber-200">
-              <span>🧍</span> <span>Whole body</span>
-            </div>
-            <div class="flex items-center gap-1 bg-white/80 px-2 py-1.5 rounded border border-amber-200">
-              <span>☀️</span> <span>Good lighting</span>
-            </div>
-            <div class="flex items-center gap-1 bg-white/80 px-2 py-1.5 rounded border border-amber-200">
-              <span>👤</span> <span>1 performer</span>
-            </div>
-            <div class="flex items-center gap-1 bg-white/80 px-2 py-1.5 rounded border border-amber-200">
-              <span>📱</span> <span>Portrait mode</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- File Input -->
-        <div class="mb-4">
-          <input type="file" id="videoInput" accept="video/*" class="block w-full text-sm text-slate-500
-            file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
-            file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700
-            hover:file:bg-indigo-100 cursor-pointer">
-        </div>
-
-        <!-- Video Player / Overlay Canvas -->
-        <div class="relative aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center border border-slate-300 shadow-inner">
-          <video id="videoElement" class="hidden" playsinline controls></video>
-          <canvas id="outputCanvas" class="w-full h-full object-contain"></canvas>
-          
-          <div id="placeholderText" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 p-4 text-center">
-            <svg class="w-12 h-12 mb-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-            </svg>
-            <p class="font-medium text-sm">Observer: Upload performer's video clip here</p>
-            <p class="text-xs text-slate-500 mt-1">(Ensure portrait, side-profile view with clear lighting)</p>
-          </div>
-        </div>
-
-        <!-- Progress Bar & AI Process Button -->
-        <div class="mt-4 flex flex-col gap-3">
-          <button id="processBtn" disabled class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg shadow transition flex items-center justify-center gap-2">
-            <span>✨ Run AI Pose & Technical Analysis</span>
-          </button>
-          
-          <div id="progressContainer" class="hidden w-full">
-            <div class="flex justify-between text-xs text-slate-600 mb-1">
-              <span>Scanning video & verifying data accuracy... (CCI 5)</span>
-              <span id="progressText">0%</span>
-            </div>
-            <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-              <div id="progressBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CCI 6 Ethical Guidelines Reminder -->
-      <div class="bg-slate-800 text-slate-200 rounded-xl p-4 text-xs space-y-1 shadow">
-        <p class="font-semibold text-amber-400 flex items-center gap-1">
-          <span>🔒</span> CCI 6: Responsible & Ethical Digital Information Sharing
-        </p>
-        <p>• All recorded videos and digital data must be used strictly for peer learning and PE feedback.</p>
-        <p>• Always seek your partner's consent before recording and treat video feedback with respect and care.</p>
-      </div>
-
-    </section>
-
-    <!-- RIGHT COLUMN: Checklist, Total Score & 2-Way E21CC Dialogue (5 cols) -->
-    <section class="lg:col-span-5 flex flex-col gap-6">
-      
-      <!-- Technical Checklist Card -->
-      <div class="glass-card rounded-xl p-5 shadow-sm border border-slate-200">
-        <div class="flex items-center justify-between mb-4 border-b pb-3">
-          <h2 class="text-lg font-bold text-slate-800">2. Technical Assessment</h2>
-          <button id="exportBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-3 py-1.5 rounded shadow flex items-center gap-1.5 transition">
-            <span>📥 Export Excel</span>
-          </button>
-        </div>
-
-        <!-- Checklist Items Container -->
-        <div class="space-y-4 max-h-[380px] overflow-y-auto pr-1">
-
-          <!-- STAGE 1 -->
-          <div class="border rounded-lg p-3 bg-slate-50">
-            <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider block mb-2">Stage 1: Preparation</span>
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex-1">
-                <p class="text-sm font-medium text-slate-800">Feet shoulder width apart</p>
-                <span id="s1_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
-              </div>
-              <div class="flex flex-col items-end gap-1">
-                <button onclick="toggleFeature('item_s1')" id="btn_item_s1" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
-                <select id="score_item_s1" onchange="calculateTotalScore()" class="score-dropdown text-xs border rounded px-1.5 py-0.5 bg-white">
-                  <option value="5">Score: 5</option>
-                  <option value="4">Score: 4</option>
-                  <option value="3" selected>Score: 3</option>
-                  <option value="2">Score: 2</option>
-                  <option value="1">Score: 1</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- STAGE 2 -->
-          <div class="border rounded-lg p-3 bg-slate-50 space-y-3">
-            <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider block">Stage 2: Setup & Ball Holding</span>
-            
-            <div class="flex items-start justify-between gap-3 border-b pb-2">
-              <div class="flex-1">
-                <p class="text-sm font-medium text-slate-800">Non-shooting hand on side & shooting hand under ball</p>
-                <span id="s2_1_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
-              </div>
-              <div class="flex flex-col items-end gap-1">
-                <button onclick="toggleFeature('item_s2_1')" id="btn_item_s2_1" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
-                <select id="score_item_s2_1" onchange="calculateTotalScore()" class="score-dropdown text-xs border rounded px-1.5 py-0.5 bg-white">
-                  <option value="5">Score: 5</option>
-                  <option value="4">Score: 4</option>
-                  <option value="3" selected>Score: 3</option>
-                  <option value="2">Score: 2</option>
-                  <option value="1">Score: 1</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="flex items-start justify-between gap-3 border-b pb-2">
-              <div class="flex-1">
-                <p class="text-sm font-medium text-slate-800">Fingers open, ball resting high above head</p>
-                <span id="s2_2_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
-              </div>
-              <div class="flex flex-col items-end gap-1">
-                <button onclick="toggleFeature('item_s2_2')" id="btn_item_s2_2" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
-                <select id="score_item_s2_2" onchange="calculateTotalScore()" class="score-dropdown text-xs border rounded px-1.5 py-0.5 bg-white">
-                  <option value="5">Score: 5</option>
-                  <option value="4">Score: 4</option>
-                  <option value="3" selected>Score: 3</option>
-                  <option value="2">Score: 2</option>
-                  <option value="1">Score: 1</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex-1">
-                <p class="text-sm font-medium text-slate-800">Shooting arm elbow at right angle pointing to net</p>
-                <span id="s2_3_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
-              </div>
-              <div class="flex flex-col items-end gap-1">
-                <button onclick="toggleFeature('item_s2_3')" id="btn_item_s2_3" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
-                <select id="score_item_s2_3" onchange="calculateTotalScore()" class="score-dropdown text-xs border rounded px-1.5 py-0.5 bg-white">
-                  <option value="5">Score: 5</option>
-                  <option value="4">Score: 4</option>
-                  <option value="3" selected>Score: 3</option>
-                  <option value="2">Score: 2</option>
-                  <option value="1">Score: 1</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- STAGE 3 -->
-          <div class="border rounded-lg p-3 bg-slate-50 space-y-3">
-            <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider block">Stage 3: Execution & Follow Through</span>
-            
-            <div class="flex items-start justify-between gap-3 border-b pb-2">
-              <div class="flex-1">
-                <p class="text-sm font-medium text-slate-800">Bend knees and straighten arm when shooting</p>
-                <span id="s3_1_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
-              </div>
-              <div class="flex flex-col items-end gap-1">
-                <button onclick="toggleFeature('item_s3_1')" id="btn_item_s3_1" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
-                <select id="score_item_s3_1" onchange="calculateTotalScore()" class="score-dropdown text-xs border rounded px-1.5 py-0.5 bg-white">
-                  <option value="5">Score: 5</option>
-                  <option value="4">Score: 4</option>
-                  <option value="3" selected>Score: 3</option>
-                  <option value="2">Score: 2</option>
-                  <option value="1">Score: 1</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex-1">
-                <p class="text-sm font-medium text-slate-800">Flick wrist on follow through</p>
-                <span id="s3_2_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
-              </div>
-              <div class="flex flex-col items-end gap-1">
-                <button onclick="toggleFeature('item_s3_2')" id="btn_item_s3_2" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
-                <select id="score_item_s3_2" onchange="calculateTotalScore()" class="score-dropdown text-xs border rounded px-1.5 py-0.5 bg-white">
-                  <option value="5">Score: 5</option>
-                  <option value="4">Score: 4</option>
-                  <option value="3" selected>Score: 3</option>
-                  <option value="2">Score: 2</option>
-                  <option value="1">Score: 1</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- TOTAL SCORE BANNER -->
-        <div class="mt-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg flex items-center justify-between">
-          <div>
-            <span class="text-xs uppercase font-bold text-indigo-600 block">Overall Score</span>
-            <span id="scoreRatingText" class="text-sm font-bold text-indigo-900">Developing</span>
-          </div>
-          <div class="text-right">
-            <span id="totalScoreDisplay" class="text-2xl font-extrabold text-indigo-700">18</span>
-            <span class="text-xs text-indigo-500 font-bold"> / 30</span>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- 2-WAY MOE E21CC DIALOGUE FRAMEWORK CARD -->
-      <div class="glass-card rounded-xl p-5 shadow-sm border border-indigo-200 bg-indigo-50/30 space-y-4">
-        
-        <div class="border-b border-indigo-200 pb-2 flex items-center justify-between">
-          <h3 class="text-md font-bold text-indigo-900 flex items-center gap-2">
-            <span>🗣️</span> 2-Way E21CC Co-Construction Dialogue
-          </h3>
-          <span class="text-[10px] font-semibold uppercase px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full">CCI 1, 2 & 3</span>
-        </div>
-
-        <!-- STEP A: OBSERVER FEEDBACK (2 STRENGTHS & 2 AREAS TO IMPROVE WITH IMPACT) -->
-        <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs space-y-3">
-          <div class="flex justify-between items-center">
-            <span class="font-bold text-xs text-indigo-800">
-              Step 1 (Observer → Performer): Empathetic Feedback & Impact Analysis
-            </span>
-            <span class="text-[10px] text-slate-400">CCI 1.3 | CCI 2.3</span>
-          </div>
-          <p class="text-[11px] text-slate-500">
-            <em>Guide for Observer:</em> Share 2 key strengths and 2 growth areas. Always explain <strong>how each technique impacts shot success</strong>.
-          </p>
-
-          <div class="space-y-2 text-xs pt-1">
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">🌟 2 Key Strengths & Their Biomechanical Impact:</label>
-              <textarea id="observerStrengths" rows="3" class="w-full p-2 border rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500" placeholder="1. Bending knees well allows for greater vertical height & momentum.
-2. Holding ball high above head creates a higher release point over defenders."></textarea>
-            </div>
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">🎯 2 Areas to Improve & Their Biomechanical Impact:</label>
-              <textarea id="observerGoal" rows="3" class="w-full p-2 border rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500" placeholder="1. Pointing elbow towards ring at 90° ensures straight directional alignment into the net.
-2. Complete wrist flick on follow-through generates backspin, softening the ball drop on the rim."></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- STEP B: PERFORMER RESPONSE & AGREEMENT (CCI 3.3 & CCI 5.3) -->
-        <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs space-y-3">
-          <div class="flex justify-between items-center">
-            <span class="font-bold text-xs text-indigo-800">
-              Step 2 (Performer → Observer): Reflection & Dialogue Response
-            </span>
-            <span class="text-[10px] text-slate-400">CCI 3.3 | CCI 5.3</span>
-          </div>
-          <p class="text-[11px] text-slate-500">
-            <em>Guide for Performer:</em> Cross-reference the AI video with your actual physical feel. Manage disagreements constructively and communicate your perspective.
-          </p>
-
-          <!-- Agreement Selector -->
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1 text-xs">Do you agree with the AI & Observer assessment?</label>
-            <select id="performerAgreement" class="w-full p-2 text-xs border rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500 font-medium">
-              <option value="Agree Completely">✅ Agree Completely: I felt this during my shot and see it in the video.</option>
-              <option value="Partially Agree">🤝 Partially Agree: I agree on some points, but felt my execution was different.</option>
-              <option value="Respectfully Disagree">💬 Respectfully Disagree: I think the camera angle or video didn't capture my full movement.</option>
+  <!-- TECHNICAL ASSESSMENT SCORECARD -->
+  <div class="card">
+    <h2>3. Technical Assessment Scorecard</h2>
+    <p>Review AI overlays and edit scores as necessary before moving to the dialogue step.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Criteria</th>
+          <th>Description</th>
+          <th>Score (1-5)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Stance & Balance</td>
+          <td>Feet shoulder-width apart pointing towards goal post</td>
+          <td>
+            <select class="score-select" onchange="calculateTotalScore()">
+              <option value="1">1 - Needs Work</option>
+              <option value="2">2 - Fair</option>
+              <option value="3" selected>3 - Good</option>
+              <option value="4">4 - Very Good</option>
+              <option value="5">5 - Excellent</option>
             </select>
-          </div>
+          </td>
+        </tr>
+        <tr>
+          <td>Grip & Ball Placement</td>
+          <td>Non-shooting hand on side & shooting hand under ball; fingers open high above head</td>
+          <td>
+            <select class="score-select" onchange="calculateTotalScore()">
+              <option value="1">1 - Needs Work</option>
+              <option value="2">2 - Fair</option>
+              <option value="3" selected>3 - Good</option>
+              <option value="4">4 - Very Good</option>
+              <option value="5">5 - Excellent</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Elbow Alignment</td>
+          <td>Shooting arm elbow at right angle pointing towards net</td>
+          <td>
+            <select class="score-select" onchange="calculateTotalScore()">
+              <option value="1">1 - Needs Work</option>
+              <option value="2">2 - Fair</option>
+              <option value="3" selected>3 - Good</option>
+              <option value="4">4 - Very Good</option>
+              <option value="5">5 - Excellent</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Leg & Arm Extension</td>
+          <td>Bend knees and straighten arm smoothly when shooting</td>
+          <td>
+            <select class="score-select" onchange="calculateTotalScore()">
+              <option value="1">1 - Needs Work</option>
+              <option value="2">2 - Fair</option>
+              <option value="3" selected>3 - Good</option>
+              <option value="4">4 - Very Good</option>
+              <option value="5">5 - Excellent</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Wrist Follow-Through</td>
+          <td>Flick wrist on follow through creating backspin</td>
+          <td>
+            <select class="score-select" onchange="calculateTotalScore()">
+              <option value="1">1 - Needs Work</option>
+              <option value="2">2 - Fair</option>
+              <option value="3" selected>3 - Good</option>
+              <option value="4">4 - Very Good</option>
+              <option value="5">5 - Excellent</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Shot Arc & Trajectory</td>
+          <td>High arc trajectory towards goal ring</td>
+          <td>
+            <select class="score-select" onchange="calculateTotalScore()">
+              <option value="1">1 - Needs Work</option>
+              <option value="2">2 - Fair</option>
+              <option value="3" selected>3 - Good</option>
+              <option value="4">4 - Very Good</option>
+              <option value="5">5 - Excellent</option>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-          <!-- Performer Voice / Notes -->
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1 text-xs">Performer's Perspective / Action Plan:</label>
-            <textarea id="performerNotes" rows="2" class="w-full p-2 border rounded text-xs bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500" placeholder="e.g. I agree that bending my knees gave me good height, but I felt my elbow alignment was affected by the camera angle. Next round I will focus on pointing my elbow directly to the ring."></textarea>
-          </div>
+    <div class="total-score-box" id="total-score-display">
+      Total Score: 18 / 30
+    </div>
+  </div>
+
+  <!-- STEP 1: OBSERVER FEEDBACK GUIDANCE (MATCHING INTERACTIVE GRID) -->
+  <div class="card">
+    <h2>4. Step 1 (Observer → Performer): Guided Matching & Feedback Construction</h2>
+    <p>Match each observed skill on the left with its correct biomechanical impact on the right to test your knowledge and unlock guided feedback tips.</p>
+
+    <!-- STRENGTHS SECTION -->
+    <div class="matching-section">
+      <h3>Phase 1: Identify 2 Strengths</h3>
+      <div class="step-indicator" id="strength-status">Matched: 0 / 2 Strengths</div>
+      
+      <div class="matching-grid">
+        <div>
+          <div class="column-title">Observed Skill (Left)</div>
+          <div id="strength-skills-list"></div>
         </div>
-
+        <div>
+          <div class="column-title">Biomechanical Impact (Right)</div>
+          <div id="strength-impacts-list"></div>
+        </div>
       </div>
 
-    </section>
+      <div id="strength-coaching-guide" class="coaching-guide-box">
+        <h4>💡 Observer Coaching Guide (Delivering Praise)</h4>
+        <p>Great job matching! Now practice delivering this feedback to your partner using empathetic communication:</p>
+        <ul>
+          <li><strong>Acknowledge execution:</strong> <em>"I noticed your skill execution was solid, which directly contributed to good balance and stability."</em></li>
+          <li><strong>Reinforce positive feel:</strong> Ask your partner how those shots felt physically.</li>
+        </ul>
+      </div>
+    </div>
 
-  </main>
+    <!-- AREAS FOR IMPROVEMENT SECTION -->
+    <div class="matching-section" style="margin-top: 25px;">
+      <h3>Phase 2: Identify 2 Areas for Improvement</h3>
+      <div class="step-indicator" id="improvement-status">Matched: 0 / 2 Improvement Areas</div>
+      
+      <div class="matching-grid">
+        <div>
+          <div class="column-title">Observed Skill to Adjust (Left)</div>
+          <div id="improvement-skills-list"></div>
+        </div>
+        <div>
+          <div class="column-title">Expected Biomechanical Impact (Right)</div>
+          <div id="improvement-impacts-list"></div>
+        </div>
+      </div>
 
-  <script>
-    const featureStates = {
-      item_s1: 'neutral',
-      item_s2_1: 'neutral',
-      item_s2_2: 'neutral',
-      item_s2_3: 'neutral',
-      item_s3_1: 'neutral',
-      item_s3_2: 'neutral'
-    };
+      <div id="improvement-coaching-guide" class="coaching-guide-box">
+        <h4>💡 Observer Coaching Guide (Providing Actionable Advice)</h4>
+        <p>Use these prompts to suggest adjustments without discouraging your partner:</p>
+        <ul>
+          <li><strong>Constructive Suggestion:</strong> <em>"Next time, try focusing on extending your elbow smoothly to maximize your power and shooting accuracy."</em></li>
+          <li><strong>Co-construction Question:</strong> <em>"How do you feel if we adjust your wrist follow-through on the next set?"</em></li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
-    const videoInput = document.getElementById('videoInput');
-    const videoElement = document.getElementById('videoElement');
-    const outputCanvas = document.getElementById('outputCanvas');
-    const canvasCtx = outputCanvas.getContext('2d');
-    const processBtn = document.getElementById('processBtn');
-    const placeholderText = document.getElementById('placeholderText');
-    const progressContainer = document.getElementById('progressContainer');
-    const progressBar = document.getElementById('progressBar');
-    const progressText = document.getElementById('progressText');
+  <!-- STEP 2: PERFORMER RESPONSE DIALOGUE -->
+  <div class="card">
+    <h2>5. Step 2 (Performer → Observer): Reflection & Dialogue Response</h2>
+    <p>Performer reflects on the feedback provided by the Observer.</p>
+    
+    <label><strong>Do you agree with the feedback and scores provided?</strong></label><br>
+    <select id="performer-agreement" style="padding: 8px; margin: 10px 0; border-radius: 4px;">
+      <option value="">-- Select Response --</option>
+      <option value="agree">Fully Agree</option>
+      <option value="partially">Partially Agree</option>
+      <option value="disagree">Respectfully Disagree / Challenge</option>
+    </select>
 
-    let poseDetector;
+    <br><br>
+    <label><strong>Performer Reflection / Reason:</strong></label>
+    <textarea id="performer-reflection" placeholder="e.g., I agree that bending my knees gives more power, but I felt my camera angle didn't capture my arm extension clearly..."></textarea>
+  </div>
 
-    function initMediaPipe() {
-      poseDetector = new Pose({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+  <!-- EXPORT BUTTON -->
+  <div style="text-align: center; margin-top: 20px;">
+    <button onclick="exportToExcel()">📊 Export Results & Peer Dialogue to Excel</button>
+  </div>
+
+</div>
+
+<script>
+  // --- 1. TOTAL SCORE CALCULATION ---
+  function calculateTotalScore() {
+    const selects = document.querySelectorAll('.score-select');
+    let total = 0;
+    selects.forEach(s => total += parseInt(s.value, 10));
+    document.getElementById('total-score-display').textContent = `Total Score: ${total} / 30`;
+  }
+
+  // --- 2. MATCHING GAME DATA & LOGIC ---
+  const skillPairs = [
+    { skill: "Feet shoulder width apart", impact: "balanced stance" },
+    { skill: "Non-shooting hand on side & shooting hand under ball", impact: "stability" },
+    { skill: "Fingers open, ball resting high above head", impact: "better aim" },
+    { skill: "Shooting arm elbow at right angle pointing to net", impact: "maximizes shooting accuracy" },
+    { skill: "Bend knees and straighten arm when shooting", impact: "maximizes power" },
+    { skill: "Flick wrist on follow through", impact: "creates backspin to improve accuracy" }
+  ];
+
+  function shuffle(array) {
+    return array.slice().sort(() => Math.random() - 0.5);
+  }
+
+  class MatchGame {
+    constructor(skillsContainerId, impactsContainerId, statusId, guideId) {
+      this.skillsContainer = document.getElementById(skillsContainerId);
+      this.impactsContainer = document.getElementById(impactsContainerId);
+      this.statusElement = document.getElementById(statusId);
+      this.guideElement = document.getElementById(guideId);
+      
+      this.selectedSkill = null;
+      this.selectedImpact = null;
+      this.matchedCount = 0;
+      
+      this.init();
+    }
+
+    init() {
+      const shuffledSkills = shuffle(skillPairs);
+      const shuffledImpacts = shuffle(skillPairs);
+
+      this.skillsContainer.innerHTML = '';
+      this.impactsContainer.innerHTML = '';
+
+      shuffledSkills.forEach(item => {
+        const box = document.createElement('div');
+        box.className = 'match-box';
+        box.textContent = item.skill;
+        box.dataset.skill = item.skill;
+        box.dataset.impact = item.impact;
+        box.onclick = () => this.selectSkill(box);
+        this.skillsContainer.appendChild(box);
       });
-      poseDetector.setOptions({
-        modelComplexity: 1,
-        smoothLandmarks: true,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
+
+      shuffledImpacts.forEach(item => {
+        const box = document.createElement('div');
+        box.className = 'match-box';
+        box.textContent = item.impact;
+        box.dataset.impact = item.impact;
+        box.onclick = () => this.selectImpact(box);
+        this.impactsContainer.appendChild(box);
       });
-
-      poseDetector.onResults(onPoseResults);
     }
-    initMediaPipe();
 
-    // Calculate Total Score (Out of 30)
-    function calculateTotalScore() {
-      const dropdowns = document.querySelectorAll('.score-dropdown');
-      let total = 0;
-      dropdowns.forEach(select => {
-        total += parseInt(select.value) || 0;
-      });
+    selectSkill(box) {
+      if (box.classList.contains('correct') || box.classList.contains('disabled')) return;
+      
+      const prev = this.skillsContainer.querySelector('.selected');
+      if (prev) prev.classList.remove('selected');
 
-      document.getElementById('totalScoreDisplay').innerText = total;
+      box.classList.add('selected');
+      this.selectedSkill = box;
+      this.checkPair();
+    }
 
-      const ratingText = document.getElementById('scoreRatingText');
-      if (total >= 26) {
-        ratingText.innerText = "Mastery (Excellent Technique)";
-        ratingText.className = "text-sm font-bold text-emerald-700";
-      } else if (total >= 20) {
-        ratingText.innerText = "Proficient (Good Form)";
-        ratingText.className = "text-sm font-bold text-indigo-800";
-      } else if (total >= 14) {
-        ratingText.innerText = "Developing (Needs Practice)";
-        ratingText.className = "text-sm font-bold text-amber-700";
+    selectImpact(box) {
+      if (box.classList.contains('correct') || box.classList.contains('disabled')) return;
+
+      const prev = this.impactsContainer.querySelector('.selected');
+      if (prev) prev.classList.remove('selected');
+
+      box.classList.add('selected');
+      this.selectedImpact = box;
+      this.checkPair();
+    }
+
+    checkPair() {
+      if (!this.selectedSkill || !this.selectedImpact) return;
+
+      const skillTargetImpact = this.selectedSkill.dataset.impact;
+      const selectedImpactValue = this.selectedImpact.dataset.impact;
+
+      const skillBox = this.selectedSkill;
+      const impactBox = this.selectedImpact;
+
+      if (skillTargetImpact === selectedImpactValue) {
+        skillBox.className = 'match-box correct disabled';
+        impactBox.className = 'match-box correct disabled';
+        this.matchedCount++;
+        this.statusElement.textContent = `Matched: ${this.matchedCount} / 2`;
+
+        if (this.matchedCount === 2) {
+          this.guideElement.style.display = 'block';
+          this.disableRemaining();
+        }
       } else {
-        ratingText.innerText = "Emerging (Requires Guidance)";
-        ratingText.className = "text-sm font-bold text-rose-700";
+        skillBox.classList.add('incorrect');
+        impactBox.classList.add('incorrect');
+
+        setTimeout(() => {
+          skillBox.classList.remove('incorrect', 'selected');
+          impactBox.classList.remove('incorrect', 'selected');
+        }, 800);
       }
+
+      this.selectedSkill = null;
+      this.selectedImpact = null;
     }
 
-    function updateFeatureState(id, state, autoScore = null) {
-      featureStates[id] = state;
-      const btn = document.getElementById(`btn_${id}`);
-      const select = document.getElementById(`score_${id}`);
+    disableRemaining() {
+      const allSkills = this.skillsContainer.querySelectorAll('.match-box:not(.correct)');
+      const allImpacts = this.impactsContainer.querySelectorAll('.match-box:not(.correct)');
 
-      if (state === 'present') {
-        btn.className = 'px-2.5 py-1 text-xs font-bold rounded bg-emerald-100 text-emerald-800 border border-emerald-300';
-        btn.innerHTML = '✅ Present';
-        if (autoScore) select.value = autoScore;
-      } else if (state === 'absent') {
-        btn.className = 'px-2.5 py-1 text-xs font-bold rounded bg-rose-100 text-rose-800 border border-rose-300';
-        btn.innerHTML = '❌ Absent';
-        if (autoScore) select.value = autoScore;
-      } else {
-        btn.className = 'px-2.5 py-1 text-xs font-bold rounded bg-amber-100 text-amber-800 border border-amber-300';
-        btn.innerHTML = '➖ Neutral';
-        select.value = "3";
-      }
-      calculateTotalScore();
+      allSkills.forEach(box => box.classList.add('disabled'));
+      allImpacts.forEach(box => box.classList.add('disabled'));
     }
+  }
 
-    function toggleFeature(id) {
-      const currentState = featureStates[id];
-      if (currentState === 'neutral') {
-        updateFeatureState(id, 'present', '5');
-      } else if (currentState === 'present') {
-        updateFeatureState(id, 'absent', '1');
-      } else {
-        updateFeatureState(id, 'neutral', '3');
-      }
+  // --- 3. MEDIAPIPE POSE AI SETUP ---
+  const videoElement = document.getElementById('input-video');
+  const canvasElement = document.getElementById('output-canvas');
+  const canvasCtx = canvasElement.getContext('2d');
+
+  const pose = new Pose({
+    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+  });
+
+  pose.setOptions({
+    modelComplexity: 1,
+    smoothLandmarks: true,
+    minDetectionConfidence: 0.5,
+    minTrackingConfidence: 0.5
+  });
+
+  pose.onResults(results => {
+    canvasElement.width = videoElement.videoWidth;
+    canvasElement.height = videoElement.videoHeight;
+
+    canvasCtx.save();
+    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+    if (results.poseLandmarks) {
+      drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 4 });
+      drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#FF0000', lineWidth: 2 });
     }
+    canvasCtx.restore();
+  });
 
-    // Video Upload Event
-    videoInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
+  document.getElementById('video-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
       const url = URL.createObjectURL(file);
       videoElement.src = url;
-      placeholderText.classList.add('hidden');
-      processBtn.disabled = false;
+      videoElement.style.display = 'block';
+      videoElement.play();
 
-      videoElement.onloadedmetadata = () => {
-        outputCanvas.width = videoElement.videoWidth;
-        outputCanvas.height = videoElement.videoHeight;
-        videoElement.currentTime = 0;
-      };
-    });
-
-    videoElement.addEventListener('seeked', () => {
-      canvasCtx.drawImage(videoElement, 0, 0, outputCanvas.width, outputCanvas.height);
-    });
-
-    function calculateAngle(A, B, C) {
-      const rad = Math.atan2(C.y - B.y, C.x - B.x) - Math.atan2(A.y - B.y, A.x - B.x);
-      let angle = Math.abs((rad * 180.0) / Math.PI);
-      if (angle > 180.0) angle = 360 - angle;
-      return angle;
-    }
-
-    let detectedMetrics = {
-      feetWidthRatioMax: 0,
-      minElbowAngle: 180,
-      maxHandHeightRatio: -1,
-      kneeBendDetected: false,
-      elbowExtensionMax: 0
-    };
-
-    function onPoseResults(results) {
-      canvasCtx.save();
-      canvasCtx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
-      canvasCtx.drawImage(results.image, 0, 0, outputCanvas.width, outputCanvas.height);
-
-      if (results.poseLandmarks) {
-        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#6366F1', lineWidth: 3 });
-        drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#10B981', lineWidth: 1, radius: 3 });
-
-        const lm = results.poseLandmarks;
-        const lShoulder = lm[11], rShoulder = lm[12];
-        const lElbow = lm[13], rElbow = lm[14];
-        const lWrist = lm[15], rWrist = lm[16];
-        const lAnkle = lm[27], rAnkle = lm[28];
-        const lKnee = lm[25], rKnee = lm[26];
-        const lHip = lm[23], rHip = lm[24];
-
-        const shoulderDist = Math.hypot(rShoulder.x - lShoulder.x, rShoulder.y - lShoulder.y);
-        const feetDist = Math.hypot(rAnkle.x - lAnkle.x, rAnkle.y - lAnkle.y);
-        if (shoulderDist > 0) {
-          const ratio = feetDist / shoulderDist;
-          if (ratio > detectedMetrics.feetWidthRatioMax) detectedMetrics.feetWidthRatioMax = ratio;
+      async function processFrame() {
+        if (!videoElement.paused && !videoElement.ended) {
+          await pose.send({ image: videoElement });
+          requestAnimationFrame(processFrame);
         }
-
-        const rightElbowAngle = calculateAngle(rShoulder, rElbow, rWrist);
-        const leftElbowAngle = calculateAngle(lShoulder, lElbow, lWrist);
-        const shootingElbowAngle = Math.min(rightElbowAngle, leftElbowAngle);
-        if (shootingElbowAngle < detectedMetrics.minElbowAngle) detectedMetrics.minElbowAngle = shootingElbowAngle;
-
-        const avgWristY = (lWrist.y + rWrist.y) / 2;
-        const avgNoseY = lm[0].y;
-        if (avgNoseY - avgWristY > detectedMetrics.maxHandHeightRatio) {
-          detectedMetrics.maxHandHeightRatio = avgNoseY - avgWristY;
-        }
-
-        const rKneeAngle = calculateAngle(rHip, rKnee, rAnkle);
-        if (rKneeAngle < 155) detectedMetrics.kneeBendDetected = true;
-
-        const maxArmExt = Math.max(rightElbowAngle, leftElbowAngle);
-        if (maxArmExt > detectedMetrics.elbowExtensionMax) detectedMetrics.elbowExtensionMax = maxArmExt;
       }
-      canvasCtx.restore();
+      videoElement.addEventListener('play', () => processFrame());
     }
+  });
 
-    processBtn.addEventListener('click', async () => {
-      if (!videoElement.src) return;
+  // --- 4. EXCEL EXPORT FUNCTION ---
+  function exportToExcel() {
+    const observer = document.getElementById('observer-name').value || 'N/A';
+    const performer = document.getElementById('performer-name').value || 'N/A';
+    const agreement = document.getElementById('performer-agreement').value || 'N/A';
+    const reflection = document.getElementById('performer-reflection').value || 'N/A';
 
-      processBtn.disabled = true;
-      progressContainer.classList.remove('hidden');
+    const data = [
+      ["Netball Shooting Analysis & Peer Dialogue Summary"],
+      ["Observer Name", observer],
+      ["Performer Name", performer],
+      [""],
+      ["Criteria", "Score"],
+      ["Stance & Balance", document.querySelectorAll('.score-select')[0].value],
+      ["Grip & Ball Placement", document.querySelectorAll('.score-select')[1].value],
+      ["Elbow Alignment", document.querySelectorAll('.score-select')[2].value],
+      ["Leg & Arm Extension", document.querySelectorAll('.score-select')[3].value],
+      ["Wrist Follow-Through", document.querySelectorAll('.score-select')[4].value],
+      ["Shot Arc & Trajectory", document.querySelectorAll('.score-select')[5].value],
+      [""],
+      ["Performer Dialogue Agreement", agreement],
+      ["Performer Reflection", reflection]
+    ];
 
-      detectedMetrics = {
-        feetWidthRatioMax: 0,
-        minElbowAngle: 180,
-        maxHandHeightRatio: -1,
-        kneeBendDetected: false,
-        elbowExtensionMax: 0
-      };
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Analysis Results");
+    XLSX.writeFile(workbook, "Netball_Shooting_Analysis_Dialogue.xlsx");
+  }
 
-      const duration = videoElement.duration;
-      const step = 0.1;
-      let currentTime = 0;
-
-      while (currentTime <= duration) {
-        videoElement.currentTime = currentTime;
-        await new Promise(resolve => { videoElement.onseeked = resolve; });
-        await poseDetector.send({ image: videoElement });
-
-        const percent = Math.min(100, Math.round((currentTime / duration) * 100));
-        progressBar.style.width = `${percent}%`;
-        progressText.innerText = `${percent}%`;
-
-        currentTime += step;
-      }
-
-      evaluateRules();
-      generateAutoPeerFeedback();
-
-      progressContainer.classList.add('hidden');
-      processBtn.disabled = false;
-      document.getElementById('aiStatusBadge').innerText = "Analysis Complete";
-      document.getElementById('aiStatusBadge').className = "text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-semibold";
-    });
-
-    function evaluateRules() {
-      // Rule 1: Feet shoulder width
-      const feetRatio = detectedMetrics.feetWidthRatioMax;
-      if (feetRatio >= 0.85 && feetRatio <= 1.25) {
-        updateFeatureState('item_s1', 'present', '5');
-        document.getElementById('s1_status').innerText = `Ideal stance width (${feetRatio.toFixed(2)}x shoulder width)`;
-      } else if (feetRatio >= 0.75 && feetRatio <= 1.35) {
-        updateFeatureState('item_s1', 'present', '4');
-        document.getElementById('s1_status').innerText = `Acceptable stance width (${feetRatio.toFixed(2)}x shoulder width)`;
-      } else if (feetRatio >= 0.65 && feetRatio <= 1.45) {
-        updateFeatureState('item_s1', 'neutral', '3');
-        document.getElementById('s1_status').innerText = `Borderline stance width (${feetRatio.toFixed(2)}x shoulder width)`;
-      } else if (feetRatio < 0.5 || feetRatio > 1.6) {
-        updateFeatureState('item_s1', 'absent', '1');
-        document.getElementById('s1_status').innerText = `Poor stance width (${feetRatio.toFixed(2)}x shoulder width)`;
-      } else {
-        updateFeatureState('item_s1', 'absent', '2');
-        document.getElementById('s1_status').innerText = `Suboptimal stance width (${feetRatio.toFixed(2)}x shoulder width)`;
-      }
-
-      // Rule 2.1: Hand placement
-      const handHt = detectedMetrics.maxHandHeightRatio;
-      if (handHt > 0.12) {
-        updateFeatureState('item_s2_1', 'present', '5');
-        document.getElementById('s2_1_status').innerText = "Excellent hand placement under/side ball";
-      } else if (handHt > 0.06) {
-        updateFeatureState('item_s2_1', 'present', '4');
-        document.getElementById('s2_1_status').innerText = "Good hand placement";
-      } else if (handHt > 0.02) {
-        updateFeatureState('item_s2_1', 'neutral', '3');
-        document.getElementById('s2_1_status').innerText = "Fair hand position";
-      } else if (handHt > -0.05) {
-        updateFeatureState('item_s2_1', 'absent', '2');
-        document.getElementById('s2_1_status').innerText = "Low hand placement";
-      } else {
-        updateFeatureState('item_s2_1', 'absent', '1');
-        document.getElementById('s2_1_status').innerText = "Poor hand positioning";
-      }
-
-      // Rule 2.2: Ball high above head
-      if (handHt > 0.15) {
-        updateFeatureState('item_s2_2', 'present', '5');
-        document.getElementById('s2_2_status').innerText = "Ball held high above head";
-      } else if (handHt > 0.08) {
-        updateFeatureState('item_s2_2', 'present', '4');
-        document.getElementById('s2_2_status').innerText = "Ball above head level";
-      } else if (handHt > 0.03) {
-        updateFeatureState('item_s2_2', 'neutral', '3');
-        document.getElementById('s2_2_status').innerText = "Ball at head height";
-      } else if (handHt > -0.05) {
-        updateFeatureState('item_s2_2', 'absent', '2');
-        document.getElementById('s2_2_status').innerText = "Ball held too low";
-      } else {
-        updateFeatureState('item_s2_2', 'absent', '1');
-        document.getElementById('s2_2_status').innerText = "Ball below chin/chest level";
-      }
-
-      // Rule 2.3: Elbow right angle
-      const elbowDeg = Math.round(detectedMetrics.minElbowAngle);
-      if (elbowDeg >= 83 && elbowDeg <= 97) {
-        updateFeatureState('item_s2_3', 'present', '5');
-        document.getElementById('s2_3_status').innerText = `Perfect right-angle elbow (${elbowDeg}°)`;
-      } else if (elbowDeg >= 73 && elbowDeg <= 107) {
-        updateFeatureState('item_s2_3', 'present', '4');
-        document.getElementById('s2_3_status').innerText = `Good elbow angle (${elbowDeg}°)`;
-      } else if (elbowDeg >= 65 && elbowDeg <= 115) {
-        updateFeatureState('item_s2_3', 'neutral', '3');
-        document.getElementById('s2_3_status').innerText = `Moderate elbow angle (${elbowDeg}°)`;
-      } else if (elbowDeg >= 55 && elbowDeg <= 125) {
-        updateFeatureState('item_s2_3', 'absent', '2');
-        document.getElementById('s2_3_status').innerText = `Suboptimal elbow angle (${elbowDeg}°)`;
-      } else {
-        updateFeatureState('item_s2_3', 'absent', '1');
-        document.getElementById('s2_3_status').innerText = `Incorrect elbow position (${elbowDeg}°)`;
-      }
-
-      // Rule 3.1: Bend knees & extend arm
-      const armExt = detectedMetrics.elbowExtensionMax;
-      if (detectedMetrics.kneeBendDetected && armExt > 168) {
-        updateFeatureState('item_s3_1', 'present', '5');
-        document.getElementById('s3_1_status').innerText = `Full knee dip & complete extension (${Math.round(armExt)}°)`;
-      } else if (detectedMetrics.kneeBendDetected && armExt > 158) {
-        updateFeatureState('item_s3_1', 'present', '4');
-        document.getElementById('s3_1_status').innerText = `Good knee dip & extension (${Math.round(armExt)}°)`;
-      } else if (armExt > 150) {
-        updateFeatureState('item_s3_1', 'neutral', '3');
-        document.getElementById('s3_1_status').innerText = `Partial extension (${Math.round(armExt)}°)`;
-      } else if (armExt > 135) {
-        updateFeatureState('item_s3_1', 'absent', '2');
-        document.getElementById('s3_1_status').innerText = `Limited arm extension (${Math.round(armExt)}°)`;
-      } else {
-        updateFeatureState('item_s3_1', 'absent', '1');
-        document.getElementById('s3_1_status').innerText = `No knee bend or extension detected`;
-      }
-
-      // Rule 3.2: Wrist flick follow through
-      if (armExt > 168) {
-        updateFeatureState('item_s3_2', 'present', '5');
-        document.getElementById('s3_2_status').innerText = "Excellent follow-through flick";
-      } else if (armExt > 160) {
-        updateFeatureState('item_s3_2', 'present', '4');
-        document.getElementById('s3_2_status').innerText = "Good follow-through";
-      } else if (armExt > 150) {
-        updateFeatureState('item_s3_2', 'neutral', '3');
-        document.getElementById('s3_2_status').innerText = "Moderate follow-through";
-      } else if (armExt > 135) {
-        updateFeatureState('item_s3_2', 'absent', '2');
-        document.getElementById('s3_2_status').innerText = "Short follow-through";
-      } else {
-        updateFeatureState('item_s3_2', 'absent', '1');
-        document.getElementById('s3_2_status').innerText = "No wrist flick/follow-through";
-      }
-    }
-
-    // Auto-generate empathetic observer coaching prompts with 2 STRENGTHS + 2 IMPROVEMENTS + BIOMECHANICAL IMPACT
-    function generateAutoPeerFeedback() {
-      // Feature definition library mapping criteria -> technical description & impact
-      const criteriaMap = {
-        s1: {
-          name: "shoulder-width stance",
-          impact: "providing a solid base of balance and consistent force distribution"
-        },
-        s2_1: {
-          name: "hand placement under the ball",
-          impact: "giving you optimal push control and ball trajectory control"
-        },
-        s2_2: {
-          name: "holding the ball high above your head",
-          impact: "creating a higher release point that makes it harder for defender to block"
-        },
-        s2_3: {
-          name: "elbow at a clean 90° angle towards the net",
-          impact: "ensuring straight directional force directly towards the goal ring"
-        },
-        s3_1: {
-          name: "knee dip and arm extension",
-          impact: "generating upward vertical power and smooth momentum transfer"
-        },
-        s3_2: {
-          name: "wrist flick follow-through",
-          impact: "imparting backspin on the ball to soften its drop on the ring"
-        }
-      };
-
-      let evaluatedFeatures = [
-        { id: 's1', score: parseInt(document.getElementById('score_item_s1').value) },
-        { id: 's2_1', score: parseInt(document.getElementById('score_item_s2_1').value) },
-        { id: 's2_2', score: parseInt(document.getElementById('score_item_s2_2').value) },
-        { id: 's2_3', score: parseInt(document.getElementById('score_item_s2_3').value) },
-        { id: 's3_1', score: parseInt(document.getElementById('score_item_s3_1').value) },
-        { id: 's3_2', score: parseInt(document.getElementById('score_item_s3_2').value) }
-      ];
-
-      // Sort by score descending
-      evaluatedFeatures.sort((a, b) => b.score - a.score);
-
-      // Top 2 features = Strengths; Bottom 2 features = Growth areas
-      let strengthList = [evaluatedFeatures[0], evaluatedFeatures[1]];
-      let growthList = [evaluatedFeatures[5], evaluatedFeatures[4]];
-
-      let sText = "🌟 2 Identified Strengths & Biomechanical Impact:\n";
-      strengthList.forEach((item, index) => {
-        const info = criteriaMap[item.id];
-        sText += `${index + 1}. Great ${info.name}! (Impact: This helped by ${info.impact}).\n`;
-      });
-
-      let gText = "🎯 2 Key Focus Areas to Improve & Biomechanical Impact:\n";
-      growthList.forEach((item, index) => {
-        const info = criteriaMap[item.id];
-        gText += `${index + 1}. Work on your ${info.name}. (Impact: Improving this will ${info.impact}).\n`;
-      });
-
-      document.getElementById('observerStrengths').value = sText.trim();
-      document.getElementById('observerGoal').value = gText.trim();
-    }
-
-    // Export Excel Functionality with full E21CC 2-Way Dialogue
-    document.getElementById('exportBtn').addEventListener('click', () => {
-      const performer = document.getElementById('performerName').value.trim() || 'Unassigned Performer';
-      const observer = document.getElementById('observerName').value.trim() || 'Unassigned Observer';
-      const studentClass = document.getElementById('studentClass').value.trim() || 'N/A';
-      const totalScore = document.getElementById('totalScoreDisplay').innerText;
-      const rating = document.getElementById('scoreRatingText').innerText;
-
-      const data = [
-        ["Netball AI Assessment & 2-Way E21CC Peer Dialogue Report"],
-        ["Performer (Shooter)", performer],
-        ["Observer (Videoer/Coach)", observer],
-        ["Class", studentClass],
-        ["Assessment Date", new Date().toLocaleDateString()],
-        ["Total Score", `${totalScore} / 30`],
-        ["Performance Level", rating],
-        [],
-        ["Stage", "Skill Feature Criteria", "AI Detection Status", "Score (1-5)"],
-        ["Stage 1", "Feet shoulder width apart", featureStates.item_s1.toUpperCase(), document.getElementById('score_item_s1').value],
-        ["Stage 2", "Non-shooting hand on side & shooting hand under ball", featureStates.item_s2_1.toUpperCase(), document.getElementById('score_item_s2_1').value],
-        ["Stage 2", "Fingers open, resting ball high above head", featureStates.item_s2_2.toUpperCase(), document.getElementById('score_item_s2_2').value],
-        ["Stage 2", "Shooting arm elbow at right angle pointing to net", featureStates.item_s2_3.toUpperCase(), document.getElementById('score_item_s2_3').value],
-        ["Stage 3", "Bend knees and straighten arm when shooting", featureStates.item_s3_1.toUpperCase(), document.getElementById('score_item_s3_1').value],
-        ["Stage 3", "Flick wrist on follow through", featureStates.item_s3_2.toUpperCase(), document.getElementById('score_item_s3_2').value],
-        [],
-        ["MOE E21CC 2-Way Dialogue Record"],
-        ["CCI 1.3 & 2.3 - 2 Strengths & Biomechanical Impact", document.getElementById('observerStrengths').value],
-        ["CCI 1.3 & 2.3 - 2 Focus Areas & Biomechanical Impact", document.getElementById('observerGoal').value],
-        ["CCI 3.3 - Performer's Agreement Status", document.getElementById('performerAgreement').value],
-        ["CCI 3.3 & 5.3 - Performer's Reflection / Action Plan", document.getElementById('performerNotes').value]
-      ];
-
-      const ws = XLSX.utils.aoa_to_sheet(data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "2-Way E21CC Dialogue");
-
-      ws['!cols'] = [{ wch: 22 }, { wch: 55 }, { wch: 20 }, { wch: 12 }];
-
-      const fileName = `${performer.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_netball_e21cc_dialogue.xlsx`;
-      XLSX.writeFile(wb, fileName);
-    });
-
+  // DOM Loaded Event
+  document.addEventListener('DOMContentLoaded', () => {
+    new MatchGame('strength-skills-list', 'strength-impacts-list', 'strength-status', 'strength-coaching-guide');
+    new MatchGame('improvement-skills-list', 'improvement-impacts-list', 'improvement-status', 'improvement-coaching-guide');
     calculateTotalScore();
-  </script>
+  });
+</script>
+
 </body>
 </html>
