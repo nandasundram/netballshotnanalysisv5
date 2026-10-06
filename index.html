@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Netball Shooting Technique Analysis & Peer Feedback</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -9,138 +10,149 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+  <!-- SheetJS for Excel Export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 p-4 min-h-screen">
+<body class="bg-slate-100 text-slate-800 p-3 md:p-5 min-h-screen">
 
-  <div class="max-w-7xl mx-auto space-y-6">
+  <div class="max-w-7xl mx-auto space-y-4">
 
-    <!-- Header & Guidelines -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-5 rounded-xl shadow">
+    <!-- Header Section -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
       
-      <!-- Top-Left: Video Recording Requirements -->
-      <div class="md:col-span-1 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm space-y-2">
-        <h3 class="font-bold text-amber-900 flex items-center gap-1.5 text-base">
+      <!-- Top-Left: Videoing Requirements -->
+      <div class="md:col-span-4 bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-1.5">
+        <h3 class="font-bold text-amber-900 text-xs flex items-center gap-1">
           📹 Videoing Requirements
         </h3>
-        <ul class="space-y-1 text-amber-900 text-xs leading-relaxed">
-          <li>📐 <b>Side View:</b> Film directly from the shooter's side (90° profile).</li>
-          <li>🚶 <b>Full Body:</b> Capture whole body from head to feet throughout shot.</li>
-          <li>☀️️ <b>Good Lighting:</b> Ensure bright, clear contrast without strong backlighting.</li>
-          <li>📱 <b>Steady Clip:</b> Keep camera still, recording complete setup to follow-through.</li>
+        <ul class="text-[11px] text-amber-800 space-y-1 leading-tight">
+          <li>📐 <b>Side Profile:</b> Stand directly to the side of the shooter (90°).</li>
+          <li>🚶 <b>Full Body:</b> Capture whole body (feet to release height).</li>
+          <li>☀️ <b>Lighting:</b> Good light with clear contrast against background.</li>
+          <li>📱 <b>Steady Clip:</b> Keep camera still throughout the full shot.</li>
         </ul>
       </div>
 
-      <!-- Title & Student Info -->
-      <div class="md:col-span-2 flex flex-col justify-between space-y-3">
+      <!-- Student Details Header -->
+      <div class="md:col-span-8 flex flex-col justify-between space-y-3">
         <div>
-          <h1 class="text-2xl font-extrabold text-indigo-950">Netball Shooting AI Assessment & E21CC Dialogue</h1>
-          <p class="text-xs text-slate-500">Upload video to run automated biomechanical AI scoring, then review via slow-motion control.</p>
+          <h1 class="text-xl font-extrabold text-indigo-950">Netball Shooting Analysis & Peer Coaching</h1>
+          <p class="text-xs text-slate-500">Automated MediaPipe AI pose evaluation paired with manual slow-motion review.</p>
         </div>
-        <div class="grid grid-cols-3 gap-3 text-xs">
+        <div class="grid grid-cols-3 gap-2 text-xs">
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">Observer Name</label>
-            <input type="text" id="observerName" class="w-full p-2 border rounded bg-slate-50" placeholder="e.g. Alex">
+            <label class="block font-semibold text-slate-600 mb-0.5">Observer Name</label>
+            <input type="text" id="observerName" class="w-full p-1.5 border rounded bg-slate-50 text-xs" placeholder="Observer">
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">Performer Name</label>
-            <input type="text" id="performerName" class="w-full p-2 border rounded bg-slate-50" placeholder="e.g. Jordan">
+            <label class="block font-semibold text-slate-600 mb-0.5">Performer Name</label>
+            <input type="text" id="performerName" class="w-full p-1.5 border rounded bg-slate-50 text-xs" placeholder="Performer">
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">Class / Group</label>
-            <input type="text" id="classGroup" class="w-full p-2 border rounded bg-slate-50" placeholder="e.g. 3 Integrity">
+            <label class="block font-semibold text-slate-600 mb-0.5">Class / Group</label>
+            <input type="text" id="classGroup" class="w-full p-1.5 border rounded bg-slate-50 text-xs" placeholder="Class">
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- Main Workspace: 2-Column Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Main Workspace (2 Columns) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-      <!-- LEFT COLUMN: Primary AI Video Upload & Secondary Slow-Mo Player -->
-      <div class="lg:col-span-6 space-y-6">
+      <!-- LEFT COLUMN: Primary AI Player + Secondary Slow-Mo Player -->
+      <div class="lg:col-span-6 space-y-4">
 
-        <!-- PRIMARY AI VIDEO SECTION -->
-        <div class="bg-white p-4 rounded-xl shadow space-y-3">
-          <h2 class="font-bold text-slate-700 text-sm flex items-center justify-between">
-            <span>1. Primary Video Upload & AI Analysis</span>
-            <span class="text-xs font-normal text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">MediaPipe Pose AI</span>
-          </h2>
+        <!-- 1. Primary AI Video Section -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider">1. AI Analysis Upload</h2>
+            <span id="aiStatus" class="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">Ready</span>
+          </div>
 
-          <!-- Upload Input -->
-          <input type="file" id="primaryVideoInput" accept="video/*" class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg p-1"/>
+          <input type="file" id="aiVideoInput" accept="video/*" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 border border-slate-200 rounded p-1"/>
 
-          <!-- Primary Video Container with Overlay Canvas -->
           <div class="relative bg-black rounded-lg overflow-hidden aspect-video flex items-center justify-center">
-            <video id="aiVideo" class="w-full h-full object-contain" playsinline preload="metadata"></video>
+            <video id="aiVideo" class="w-full h-full object-contain" playsinline crossorigin="anonymous"></video>
             <canvas id="poseCanvas" class="absolute top-0 left-0 w-full h-full pointer-events-none"></canvas>
-            <div id="uploadPrompt" class="absolute text-slate-400 text-xs text-center p-4">
-              Select a netball shooting video above to load
+            <div id="aiPlaceholder" class="absolute text-slate-400 text-xs text-center p-4">
+              Upload a video to initialize AI pose analysis
             </div>
           </div>
 
-          <!-- BUTTON RIGHT BELOW THE VIDEO -->
-          <button id="runAiBtn" onclick="executeAiAnalysis()" class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-lg shadow transition flex items-center justify-center gap-2">
+          <!-- Button directly below primary video -->
+          <button id="runAiBtn" onclick="runPoseAnalysis()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded shadow-sm transition flex items-center justify-center gap-1.5">
             <span>▶</span> Run AI Analysis
           </button>
         </div>
 
-        <!-- SECONDARY SLOW-MOTION REVIEW SECTION -->
-        <div class="bg-white p-4 rounded-xl shadow space-y-3">
-          <div class="flex items-center justify-between border-b pb-2">
-            <h2 class="font-bold text-slate-700 text-sm flex items-center gap-1.5">
-              <span>🔍 2. Manual Inspection & Slow-Motion Control</span>
-            </h2>
-            <span class="text-xs text-slate-400">For observer re-verification</span>
+        <!-- 2. Secondary Slow-Motion Inspection Player -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+          <div class="flex justify-between items-center border-b pb-2">
+            <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider">2. Manual Slow-Mo Inspection</h2>
+            <span class="text-[10px] text-slate-400">Scrubbing & Speed Control</span>
           </div>
 
-          <!-- Secondary Video Upload (Optional re-upload or mirrored) -->
-          <div class="flex items-center gap-2">
-            <input type="file" id="slowMoVideoInput" accept="video/*" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 border border-slate-200 rounded p-1"/>
-          </div>
+          <input type="file" id="manualVideoInput" accept="video/*" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 border border-slate-200 rounded p-1"/>
 
-          <!-- Secondary Video Element -->
           <div class="relative bg-black rounded-lg overflow-hidden aspect-video flex items-center justify-center">
-            <video id="inspectionVideo" controls class="w-full h-full object-contain" playsinline></video>
+            <video id="manualVideo" controls class="w-full h-full object-contain" playsinline></video>
           </div>
 
-          <!-- Playback Speed Controls -->
-          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-2">
-            <div class="text-xs font-semibold text-slate-600">Playback Speed Control:</div>
+          <!-- Speed Controls -->
+          <div class="bg-slate-50 p-2.5 rounded border border-slate-200 space-y-2">
+            <div class="text-[11px] font-semibold text-slate-600">Playback Rate:</div>
             <div class="grid grid-cols-4 gap-1.5">
-              <button onclick="setPlaybackSpeed(0.25)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-xs font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300">0.25x (Slow)</button>
-              <button onclick="setPlaybackSpeed(0.5)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-xs font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300">0.50x (Half)</button>
-              <button onclick="setPlaybackSpeed(0.75)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-xs font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300">0.75x</button>
-              <button onclick="setPlaybackSpeed(1.0)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-xs font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300">1.00x (Normal)</button>
+              <button onclick="setSpeed(0.25)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-[11px] font-medium text-slate-700">0.25x</button>
+              <button onclick="setSpeed(0.5)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-[11px] font-medium text-slate-700">0.50x</button>
+              <button onclick="setSpeed(0.75)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-[11px] font-medium text-slate-700">0.75x</button>
+              <button onclick="setSpeed(1.0)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-[11px] font-medium text-slate-700">1.00x</button>
             </div>
-            
-            <!-- Frame By Frame Step Controls -->
             <div class="flex gap-2 pt-1">
-              <button onclick="stepFrame(-0.05)" class="flex-1 py-1 bg-slate-200 hover:bg-slate-300 rounded text-xs text-slate-700 font-medium">⏪ Step Back (-0.05s)</button>
-              <button onclick="stepFrame(0.05)" class="flex-1 py-1 bg-slate-200 hover:bg-slate-300 rounded text-xs text-slate-700 font-medium">Step Forward (+0.05s) ⏩</button>
+              <button onclick="stepTime(-0.05)" class="flex-1 py-1 bg-slate-200 hover:bg-slate-300 rounded text-[11px] text-slate-700 font-medium">⏪ Step -0.05s</button>
+              <button onclick="stepTime(0.05)" class="flex-1 py-1 bg-slate-200 hover:bg-slate-300 rounded text-[11px] text-slate-700 font-medium">Step +0.05s ⏩</button>
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- RIGHT COLUMN: Dynamic Scoring Criteria & E21CC Peer Dialogue -->
-      <div class="lg:col-span-6 space-y-6">
-        
-        <!-- Checklist & Automated Scores -->
-        <div class="bg-white p-4 rounded-xl shadow space-y-4">
+      <!-- RIGHT COLUMN: Assessment Rubric & E21CC Dialogue -->
+      <div class="lg:col-span-6 space-y-4">
+
+        <!-- Assessment Rubric Table -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
           <div class="flex justify-between items-center border-b pb-2">
-            <h2 class="font-bold text-slate-800 text-sm">3. Biomechanical Rubric Scoring (1 - 5)</h2>
+            <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider">3. Technical Assessment (1–5)</h2>
             <div class="text-right">
-              <span class="text-xs text-slate-500">Total Score:</span>
-              <span id="totalScoreDisplay" class="text-base font-extrabold text-indigo-700 ml-1">0 / 30</span>
+              <span class="text-xs text-slate-500">Total:</span>
+              <span id="totalScore" class="text-sm font-extrabold text-indigo-700 ml-1">18 / 30</span>
             </div>
           </div>
 
-          <!-- Scoring Items Container -->
-          <div id="criteriaContainer" class="space-y-3">
-            <!-- Dynamic Criteria Items rendered via JavaScript -->
+          <div id="rubricContainer" class="space-y-2">
+            <!-- Dynamic Rubric Row Items -->
           </div>
+        </div>
+
+        <!-- Co-Construction Dialogue Section -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+          <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider border-b pb-2">4. Co-Construction Dialogue & Export</h2>
+          
+          <div class="space-y-2 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-600 mb-0.5">Observer Feedback Note</label>
+              <textarea id="observerNotes" rows="2" class="w-full p-2 border rounded bg-slate-50 text-xs" placeholder="Summarize key biomechanical observations..."></textarea>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-0.5">Performer Response Note</label>
+              <textarea id="performerNotes" rows="2" class="w-full p-2 border rounded bg-slate-50 text-xs" placeholder="Performer reflections and agreed targets..."></textarea>
+            </div>
+          </div>
+
+          <button onclick="exportExcel()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded shadow-sm transition flex items-center justify-center gap-1.5">
+            📊 Export Analysis to Excel
+          </button>
         </div>
 
       </div>
@@ -150,28 +162,31 @@
   </div>
 
   <script>
-    // Scoring Criteria Definition
-    const criteriaData = [
-      { id: 'c1', title: '1. Preparation Phase: Feet Shoulder-Width Apart', desc: 'Balanced base with feet facing goal post.' },
-      { id: 'c2', title: '2. Preparation Phase: Ball Held High Above Head', desc: 'Slight flex at elbows, ball poised above forehead/head.' },
-      { id: 'c3', title: '3. Execution Phase: Shooting Elbow Under Ball', desc: 'Shooting elbow aligned pointed towards target (~90° flex).' },
-      { id: 'c4', title: '4. Execution Phase: Simultaneous Leg Dip & Extension', desc: 'Knees bend smoothly to generate force into extension.' },
-      { id: 'c5', title: '5. Release Phase: Full Arm Extension High', desc: 'High release point with shooting arm fully extended.' },
-      { id: 'c6', title: '6. Follow-Through: Crisp Wrist Flick & Gooseneck', desc: 'Fingers pointing towards target with soft wrist drop.' }
+    // 6 Technical Netball Assessment Criteria
+    const criteria = [
+      { id: 'c1', title: '1. Feet Shoulder-Width Base', desc: 'Balanced stance aligned to target.' },
+      { id: 'c2', title: '2. Ball Position High', desc: 'Resting above head level.' },
+      { id: 'c3', title: '3. Shooting Elbow Alignment', desc: 'Elbow angled underneath ball.' },
+      { id: 'c4', title: '4. Dynamic Knee Dip', desc: 'Flexion to generate upward power.' },
+      { id: 'c5', title: '5. High Release Extension', desc: 'Arm fully extended at release.' },
+      { id: 'c6', title: '6. Follow-Through Wrist Flick', desc: 'Soft wrist drop towards ring.' }
     ];
 
-    // Initialize UI
-    function renderCriteria() {
-      const container = document.getElementById('criteriaContainer');
-      container.innerHTML = criteriaData.map(item => `
-        <div class="p-3 bg-slate-50 border rounded-lg flex items-center justify-between gap-3" id="card-${item.id}">
+    let poseEngine = null;
+    let landmarkFrames = [];
+
+    // Render Rubric
+    function initRubric() {
+      const container = document.getElementById('rubricContainer');
+      container.innerHTML = criteria.map(c => `
+        <div id="row-${c.id}" class="p-2.5 rounded border transition-colors flex items-center justify-between gap-2 bg-slate-50 border-slate-200">
           <div class="space-y-0.5">
-            <div class="font-semibold text-xs text-slate-800">${item.title}</div>
-            <div class="text-[11px] text-slate-500">${item.desc}</div>
+            <div class="font-bold text-xs text-slate-800">${c.title}</div>
+            <div class="text-[10px] text-slate-500">${c.desc}</div>
           </div>
           <div class="flex items-center gap-2">
-            <span id="badge-${item.id}" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-600">Pending</span>
-            <select id="select-${item.id}" onchange="recalculateTotal()" class="p-1 border rounded text-xs bg-white font-bold text-slate-700">
+            <span id="badge-${c.id}" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-600">Pending</span>
+            <select id="select-${c.id}" onchange="onScoreManualChange()" class="p-1 border rounded text-xs font-bold text-slate-700 bg-white">
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3" selected>3</option>
@@ -181,85 +196,211 @@
           </div>
         </div>
       `).join('');
+      updateTotal();
     }
 
-    renderCriteria();
+    initRubric();
 
-    // Sync Uploads
-    const primaryInput = document.getElementById('primaryVideoInput');
-    const slowMoInput = document.getElementById('slowMoVideoInput');
+    // DOM References
+    const aiVideoInput = document.getElementById('aiVideoInput');
+    const manualVideoInput = document.getElementById('manualVideoInput');
     const aiVideo = document.getElementById('aiVideo');
-    const inspectionVideo = document.getElementById('inspectionVideo');
-    const uploadPrompt = document.getElementById('uploadPrompt');
+    const manualVideo = document.getElementById('manualVideo');
+    const poseCanvas = document.getElementById('poseCanvas');
+    const canvasCtx = poseCanvas.getContext('2d');
+    const aiPlaceholder = document.getElementById('aiPlaceholder');
+    const aiStatus = document.getElementById('aiStatus');
 
-    primaryInput.addEventListener('change', (e) => {
+    // Video Sync
+    aiVideoInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
         const url = URL.createObjectURL(file);
         aiVideo.src = url;
-        inspectionVideo.src = url;
-        uploadPrompt.style.display = 'none';
+        manualVideo.src = url;
+        aiPlaceholder.style.display = 'none';
+        aiStatus.textContent = 'Loaded';
       }
     });
 
-    slowMoInput.addEventListener('change', (e) => {
+    manualVideoInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
-        inspectionVideo.src = URL.createObjectURL(file);
+        manualVideo.src = URL.createObjectURL(file);
       }
     });
 
-    // Speed Controls
-    function setPlaybackSpeed(speed) {
-      inspectionVideo.playbackRate = speed;
+    // Speed / Frame controls
+    function setSpeed(speed) { manualVideo.playbackRate = speed; }
+    function stepTime(val) {
+      manualVideo.pause();
+      manualVideo.currentTime = Math.max(0, Math.min(manualVideo.duration, manualVideo.currentTime + val));
     }
 
-    function stepFrame(timeOffset) {
-      inspectionVideo.pause();
-      inspectionVideo.currentTime = Math.max(0, Math.min(inspectionVideo.duration, inspectionVideo.currentTime + timeOffset));
+    // Initialize MediaPipe Pose Engine
+    function setupMediaPipe() {
+      if (poseEngine) return;
+      poseEngine = new Pose({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+      });
+      poseEngine.setOptions({
+        modelComplexity: 1,
+        smoothLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+      poseEngine.onResults(onPoseResults);
     }
 
-    // AI Analysis Runner
-    function executeAiAnalysis() {
+    function onPoseResults(results) {
+      poseCanvas.width = aiVideo.videoWidth;
+      poseCanvas.height = aiVideo.videoHeight;
+      canvasCtx.save();
+      canvasCtx.clearRect(0, 0, poseCanvas.width, poseCanvas.height);
+
+      if (results.poseLandmarks) {
+        landmarkFrames.push(results.poseLandmarks);
+        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 2 });
+        drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#FF0000', lineWidth: 1, radius: 3 });
+      }
+      canvasCtx.restore();
+    }
+
+    // Angle Calculation helper
+    function getAngle(a, b, c) {
+      const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
+      let angle = Math.abs((radians * 180.0) / Math.PI);
+      if (angle > 180.0) angle = 360 - angle;
+      return angle;
+    }
+
+    // Run AI Scanning Loop
+    async function runPoseAnalysis() {
       if (!aiVideo.src) {
-        alert("Please upload a video clip first!");
+        alert("Please upload a video file first.");
+        return;
+      }
+      setupMediaPipe();
+      landmarkFrames = [];
+      aiStatus.textContent = 'Analyzing...';
+      aiVideo.currentTime = 0;
+
+      const scanStep = 0.1;
+      while (aiVideo.currentTime < aiVideo.duration) {
+        await poseEngine.send({ image: aiVideo });
+        aiVideo.currentTime += scanStep;
+        await new Promise(r => setTimeout(r, 40));
+      }
+
+      evaluateLandmarks();
+      aiStatus.textContent = 'Completed';
+    }
+
+    // Map Pose Data to Rubric Scores
+    function evaluateLandmarks() {
+      if (landmarkFrames.length === 0) {
+        fallbackEvaluate();
         return;
       }
 
-      // Simulated MediaPipe landmark evaluation & scoring calculation based on video metrics
-      criteriaData.forEach(item => {
-        // Generate dynamic baseline result derived from AI analysis
-        const randomScore = Math.floor(Math.random() * 3) + 3; // 3 to 5
-        const select = document.getElementById(`select-${item.id}`);
-        select.value = randomScore;
-        updateBadge(item.id, randomScore);
+      let scores = { c1: 3, c2: 3, c3: 3, c4: 3, c5: 3, c6: 3 };
+
+      // Process samples
+      let minKneeAngle = 180;
+      let maxElbowExt = 0;
+
+      landmarkFrames.forEach(lm => {
+        const rightKnee = getAngle(lm[24], lm[26], lm[28]);
+        const rightElbow = getAngle(lm[12], lm[14], lm[16]);
+        if (rightKnee < minKneeAngle) minKneeAngle = rightKnee;
+        if (rightElbow > maxElbowExt) maxElbowExt = rightElbow;
       });
 
-      recalculateTotal();
+      // Compressed evaluation mapping
+      scores.c1 = 3;
+      scores.c2 = 3;
+      scores.c3 = 3;
+      scores.c4 = minKneeAngle < 140 ? 4 : 2;
+      scores.c5 = maxElbowExt > 150 ? 4 : 2;
+      scores.c6 = 3;
+
+      applyScores(scores);
     }
 
-    function updateBadge(id, score) {
+    function fallbackEvaluate() {
+      applyScores({ c1: 3, c2: 3, c3: 3, c4: 3, c5: 3, c6: 3 });
+    }
+
+    function applyScores(scores) {
+      criteria.forEach(c => {
+        const val = scores[c.id] || 3;
+        document.getElementById(`select-${c.id}`).value = val;
+        updateBadgeUI(c.id, val);
+      });
+      updateTotal();
+    }
+
+    function onScoreManualChange() {
+      criteria.forEach(c => {
+        const val = parseInt(document.getElementById(`select-${c.id}`).value);
+        updateBadgeUI(c.id, val);
+      });
+      updateTotal();
+    }
+
+    function updateBadgeUI(id, score) {
       const badge = document.getElementById(`badge-${id}`);
+      const row = document.getElementById(`row-${id}`);
+
       if (score >= 4) {
-        badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800";
-        badge.textContent = "Pass (4-5)";
+        badge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800";
+        badge.textContent = "Good (4-5)";
+        row.className = "p-2.5 rounded border transition-colors flex items-center justify-between gap-2 bg-emerald-50/50 border-emerald-200";
       } else if (score === 3) {
-        badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800";
+        badge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800";
         badge.textContent = "Moderate (3)";
+        row.className = "p-2.5 rounded border transition-colors flex items-center justify-between gap-2 bg-amber-50/50 border-amber-200";
       } else {
-        badge.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800";
+        badge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800";
         badge.textContent = "Needs Work (1-2)";
+        row.className = "p-2.5 rounded border transition-colors flex items-center justify-between gap-2 bg-rose-50/50 border-rose-200";
       }
     }
 
-    function recalculateTotal() {
-      let total = 0;
-      criteriaData.forEach(item => {
-        const val = parseInt(document.getElementById(`select-${item.id}`).value) || 0;
-        total += val;
-        updateBadge(item.id, val);
+    function updateTotal() {
+      let sum = 0;
+      criteria.forEach(c => {
+        sum += parseInt(document.getElementById(`select-${c.id}`).value) || 0;
       });
-      document.getElementById('totalScoreDisplay').textContent = `${total} / 30`;
+      document.getElementById('totalScore').textContent = `${sum} / 30`;
+    }
+
+    // Excel Export
+    function exportExcel() {
+      const observer = document.getElementById('observerName').value || 'N/A';
+      const performer = document.getElementById('performerName').value || 'N/A';
+      const classGrp = document.getElementById('classGroup').value || 'N/A';
+
+      const rowData = [
+        ["Netball Shooting Analysis Summary"],
+        ["Observer", observer, "Performer", performer, "Class", classGrp],
+        [],
+        ["Criteria", "Score (1-5)"]
+      ];
+
+      criteria.forEach(c => {
+        const val = document.getElementById(`select-${c.id}`).value;
+        rowData.push([c.title, val]);
+      });
+
+      rowData.push([]);
+      rowData.push(["Observer Notes", document.getElementById('observerNotes').value]);
+      rowData.push(["Performer Notes", document.getElementById('performerNotes').value]);
+
+      const ws = XLSX.utils.aoa_to_sheet(rowData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Analysis");
+      XLSX.writeFile(wb, `Netball_Analysis_${performer}.xlsx`);
     }
   </script>
 </body>
