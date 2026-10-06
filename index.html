@@ -24,7 +24,7 @@
       margin: 10px 15px;
       background-color: #f4f7f6;
       color: #333;
-      font-size: 0.85rem; /* Squeezed compact font size */
+      font-size: 0.85rem;
     }
 
     h1 {
@@ -94,7 +94,7 @@
       border-radius: 6px;
       overflow: hidden;
       margin-top: 8px;
-      max-height: 380px; /* Constrained height to minimize vertical scrolling */
+      max-height: 380px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -156,7 +156,36 @@
       background-color: #e9ecef;
     }
 
-    select.score-select, select.impact-select {
+    select.score-select {
+      width: 100%;
+      padding: 3px 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 0.8rem;
+      font-weight: bold;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Score Color Coding */
+    select.score-select.score-poor {
+      background-color: #fee2e2; /* Red (1-2) */
+      color: #991b1b;
+      border-color: #f87171;
+    }
+
+    select.score-select.score-medium {
+      background-color: #fef3c7; /* Yellow (3) */
+      color: #92400e;
+      border-color: #fcd34d;
+    }
+
+    select.score-select.score-good {
+      background-color: #dcfce7; /* Green (4-5) */
+      color: #166534;
+      border-color: #4ade80;
+    }
+
+    select.impact-select {
       width: 100%;
       padding: 3px 5px;
       border-radius: 4px;
@@ -218,7 +247,6 @@
       font-size: 0.8rem;
     }
 
-    /* Responsive adjustment for small screens */
     @media (max-width: 850px) {
       .main-grid {
         grid-template-columns: 1fr;
@@ -280,55 +308,79 @@
           <thead>
             <tr>
               <th>Criteria</th>
-              <th style="width: 70px;">Score</th>
+              <th style="width: 100px;">Score (1-5)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>Feet shoulder-width apart</td>
               <td>
-                <select class="score-select" onchange="calculateTotalScore()">
-                  <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                <select id="score-0" class="score-select" onchange="updateScoreColors(); calculateTotalScore();">
+                  <option value="1">1 (Poor)</option>
+                  <option value="2">2 (Basic)</option>
+                  <option value="3" selected>3 (Fair)</option>
+                  <option value="4">4 (Good)</option>
+                  <option value="5">5 (Excellent)</option>
                 </select>
               </td>
             </tr>
             <tr>
               <td>Non-shooting hand on side & shooting hand under ball</td>
               <td>
-                <select class="score-select" onchange="calculateTotalScore()">
-                  <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                <select id="score-1" class="score-select" onchange="updateScoreColors(); calculateTotalScore();">
+                  <option value="1">1 (Poor)</option>
+                  <option value="2">2 (Basic)</option>
+                  <option value="3" selected>3 (Fair)</option>
+                  <option value="4">4 (Good)</option>
+                  <option value="5">5 (Excellent)</option>
                 </select>
               </td>
             </tr>
             <tr>
               <td>Fingers open, ball resting high above head</td>
               <td>
-                <select class="score-select" onchange="calculateTotalScore()">
-                  <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                <select id="score-2" class="score-select" onchange="updateScoreColors(); calculateTotalScore();">
+                  <option value="1">1 (Poor)</option>
+                  <option value="2">2 (Basic)</option>
+                  <option value="3" selected>3 (Fair)</option>
+                  <option value="4">4 (Good)</option>
+                  <option value="5">5 (Excellent)</option>
                 </select>
               </td>
             </tr>
             <tr>
               <td>Shooting arm elbow at right angle pointing to net</td>
               <td>
-                <select class="score-select" onchange="calculateTotalScore()">
-                  <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                <select id="score-3" class="score-select" onchange="updateScoreColors(); calculateTotalScore();">
+                  <option value="1">1 (Poor)</option>
+                  <option value="2">2 (Basic)</option>
+                  <option value="3" selected>3 (Fair)</option>
+                  <option value="4">4 (Good)</option>
+                  <option value="5">5 (Excellent)</option>
                 </select>
               </td>
             </tr>
             <tr>
               <td>Bend knees and straighten arm when shooting</td>
               <td>
-                <select class="score-select" onchange="calculateTotalScore()">
-                  <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                <select id="score-4" class="score-select" onchange="updateScoreColors(); calculateTotalScore();">
+                  <option value="1">1 (Poor)</option>
+                  <option value="2">2 (Basic)</option>
+                  <option value="3" selected>3 (Fair)</option>
+                  <option value="4">4 (Good)</option>
+                  <option value="5">5 (Excellent)</option>
                 </select>
               </td>
             </tr>
             <tr>
               <td>Flick wrist on follow through</td>
               <td>
-                <select class="score-select" onchange="calculateTotalScore()">
-                  <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option>
+                <select id="score-5" class="score-select" onchange="updateScoreColors(); calculateTotalScore();">
+                  <option value="1">1 (Poor)</option>
+                  <option value="2">2 (Basic)</option>
+                  <option value="3" selected>3 (Fair)</option>
+                  <option value="4">4 (Good)</option>
+                  <option value="5">5 (Excellent)</option>
                 </select>
               </td>
             </tr>
@@ -347,7 +399,6 @@
         <!-- STRENGTHS SECTION -->
         <h4 style="color:#15803d;">Phase 1: Identify 2 Strengths</h4>
         
-        <!-- Strength 1 -->
         <div class="match-row">
           <div class="skill-label">Strength 1: Select Skill</div>
           <select id="str-skill-1" class="impact-select" onchange="populateImpactOptions('str-skill-1', 'str-impact-1')">
@@ -367,7 +418,6 @@
           <span id="str-status-1" class="status-text"></span>
         </div>
 
-        <!-- Strength 2 -->
         <div class="match-row">
           <div class="skill-label">Strength 2: Select Skill</div>
           <select id="str-skill-2" class="impact-select" onchange="populateImpactOptions('str-skill-2', 'str-impact-2')">
@@ -396,7 +446,6 @@
         <!-- AREAS FOR IMPROVEMENT SECTION -->
         <h4 style="color:#b91c1c;">Phase 2: Identify 2 Areas for Improvement</h4>
         
-        <!-- Improvement 1 -->
         <div class="match-row">
           <div class="skill-label">Area 1: Select Skill to Adjust</div>
           <select id="imp-skill-1" class="impact-select" onchange="populateImpactOptions('imp-skill-1', 'imp-impact-1')">
@@ -416,7 +465,6 @@
           <span id="imp-status-1" class="status-text"></span>
         </div>
 
-        <!-- Improvement 2 -->
         <div class="match-row">
           <div class="skill-label">Area 2: Select Skill to Adjust</div>
           <select id="imp-skill-2" class="impact-select" onchange="populateImpactOptions('imp-skill-2', 'imp-impact-2')">
@@ -465,6 +513,22 @@
   </div>
 
 <script>
+  // Dynamically update colors based on 1-5 score rating (1-2: Red, 3: Yellow, 4-5: Green)
+  function updateScoreColors() {
+    const scoreSelects = document.querySelectorAll('.score-select');
+    scoreSelects.forEach(select => {
+      const val = parseInt(select.value, 10);
+      select.classList.remove('score-poor', 'score-medium', 'score-good');
+      if (val <= 2) {
+        select.classList.add('score-poor'); // Red
+      } else if (val === 3) {
+        select.classList.add('score-medium'); // Yellow
+      } else {
+        select.classList.add('score-good'); // Green
+      }
+    });
+  }
+
   // Dynamic Score Total Calculation
   function calculateTotalScore() {
     const selects = document.querySelectorAll('.score-select');
@@ -505,12 +569,12 @@
     if (!skillVal || !impactVal) return;
 
     if (skillVal === impactVal) {
-      impactSelect.style.backgroundColor = '#dcfce7'; // Green
+      impactSelect.style.backgroundColor = '#dcfce7';
       impactSelect.style.borderColor = '#28a745';
       statusEl.textContent = '✓ Correct Match';
       statusEl.style.color = '#15803d';
     } else {
-      impactSelect.style.backgroundColor = '#fee2e2'; // Red
+      impactSelect.style.backgroundColor = '#fee2e2';
       impactSelect.style.borderColor = '#dc3545';
       statusEl.textContent = '✗ Incorrect match. Try again!';
       statusEl.style.color = '#b91c1c';
@@ -540,6 +604,15 @@
   let selectedFile = null;
   let currentAnimationId = null;
 
+  // Biomechanical Angle Tracking Variables
+  let aiData = {
+    ankleShoulderRatioSum: 0,
+    wristEyeElevations: 0,
+    elbowAngleSum: 0,
+    kneeFlexions: 0,
+    frameCount: 0
+  };
+
   const pose = new Pose({
     locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
   });
@@ -550,6 +623,15 @@
     minDetectionConfidence: 0.5,
     minTrackingConfidence: 0.5
   });
+
+  // Calculate angle between three landmarks (A-B-C)
+  function findAngle(A, B, C) {
+    if (!A || !B || !C) return 180;
+    const rad = Math.atan2(C.y - B.y, C.x - B.x) - Math.atan2(A.y - B.y, A.x - B.x);
+    let angle = Math.abs(rad * 180.0 / Math.PI);
+    if (angle > 180.0) angle = 360.0 - angle;
+    return angle;
+  }
 
   pose.onResults(results => {
     canvasElement.width = videoElement.videoWidth || 640;
@@ -562,11 +644,44 @@
     if (results.poseLandmarks) {
       drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 3 });
       drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#FF0000', lineWidth: 2 });
+
+      // Landmark Analysis
+      const lm = results.poseLandmarks;
+      
+      // 1. Feet Width Check
+      if (lm[27] && lm[28] && lm[11] && lm[12]) {
+        const ankleDist = Math.abs(lm[27].x - lm[28].x);
+        const shoulderDist = Math.abs(lm[11].x - lm[12].x);
+        if (shoulderDist > 0) {
+          aiData.ankleShoulderRatioSum += (ankleDist / shoulderDist);
+        }
+      }
+
+      // 2. High Ball & Hand Position
+      if (lm[15] && lm[2] && lm[5]) {
+        if (lm[15].y < lm[2].y || lm[15].y < lm[5].y) {
+          aiData.wristEyeElevations++;
+        }
+      }
+
+      // 3. Right Elbow Angle
+      if (lm[12] && lm[14] && lm[16]) {
+        const angle = findAngle(lm[12], lm[14], lm[16]);
+        aiData.elbowAngleSum += angle;
+      }
+
+      // 4. Knee Bend
+      if (lm[24] && lm[26] && lm[28]) {
+        const kneeAngle = findAngle(lm[24], lm[26], lm[28]);
+        if (kneeAngle < 155) aiData.kneeFlexions++;
+      }
+
+      aiData.frameCount++;
     }
     canvasCtx.restore();
   });
 
-  // Handle Video Input Selection (Clear old video & canvas state)
+  // Handle Video Selection & Clear Old Video
   document.getElementById('video-input').addEventListener('change', (e) => {
     resetVideoState();
     if (e.target.files && e.target.files[0]) {
@@ -584,19 +699,20 @@
     videoElement.load();
     videoElement.style.display = 'none';
     canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+    // Reset AI metrics
+    aiData = { ankleShoulderRatioSum: 0, wristEyeElevations: 0, elbowAngleSum: 0, kneeFlexions: 0, frameCount: 0 };
   }
 
-  // Explicit Button Trigger to Run AI Analysis & Auto-Update Scores
+  // Explicit Button Trigger to Run AI Analysis & Evaluate Scores
   function runAiAnalysis() {
     if (!selectedFile) {
       alert("Please choose a video file first!");
       return;
     }
 
-    // Stop and clear previous state
     resetVideoState();
 
-    // Create new object URL and play video
     const url = URL.createObjectURL(selectedFile);
     videoElement.src = url;
     videoElement.style.display = 'block';
@@ -611,29 +727,55 @@
     
     videoElement.onplay = () => processFrame();
 
-    // Automatically generate AI Score recommendations into Rubric
-    autoUpdateAiScores();
+    // Map AI analysis calculations directly to Technical Scores (1-5 scale) upon video completion or playback
+    videoElement.onended = () => evaluateAiScores();
+    
+    // Quick evaluate fallback in case video is long
+    setTimeout(() => {
+      evaluateAiScores();
+    }, 3000);
   }
 
-  // Generate linked AI assessment scores into technical results
-  function autoUpdateAiScores() {
-    const scoreSelects = document.querySelectorAll('.score-select');
-    
-    // Calculated AI dynamic evaluations (sample scores between 3 and 5)
-    const simulatedAiScores = [
-      Math.floor(Math.random() * 2) + 4, // Feet stance (4-5)
-      Math.floor(Math.random() * 2) + 3, // Hand placement (3-4)
-      Math.floor(Math.random() * 2) + 4, // Ball position (4-5)
-      Math.floor(Math.random() * 3) + 3, // Elbow angle (3-5)
-      Math.floor(Math.random() * 2) + 3, // Knee bend (3-4)
-      Math.floor(Math.random() * 2) + 4  // Wrist flick (4-5)
-    ];
+  // Convert landmark metrics to 1-5 Scores with Color Coding
+  function evaluateAiScores() {
+    if (aiData.frameCount === 0) return;
 
-    scoreSelects.forEach((select, index) => {
-      select.value = simulatedAiScores[index];
-    });
+    const avgAnkleRatio = aiData.ankleShoulderRatioSum / aiData.frameCount;
+    const avgElbowAngle = aiData.elbowAngleSum / aiData.frameCount;
+    const highRatio = aiData.wristEyeElevations / aiData.frameCount;
 
-    // Update total score display immediately
+    // Score 1: Feet Stance (Optimal ratio ~0.8 to 1.3)
+    let s1 = 3;
+    if (avgAnkleRatio >= 0.85 && avgAnkleRatio <= 1.25) s1 = 5;
+    else if (avgAnkleRatio >= 0.7 && avgAnkleRatio <= 1.4) s1 = 4;
+    else if (avgAnkleRatio < 0.5 || avgAnkleRatio > 1.6) s1 = 2;
+
+    // Score 2: Hand Stance
+    let s2 = (highRatio > 0.4) ? 4 : 2;
+
+    // Score 3: High Ball resting
+    let s3 = (highRatio > 0.6) ? 5 : (highRatio > 0.3 ? 3 : 1);
+
+    // Score 4: Right angle elbow (~80 - 110 degrees)
+    let s4 = 3;
+    if (avgElbowAngle >= 80 && avgElbowAngle <= 110) s4 = 5;
+    else if (avgElbowAngle >= 70 && avgElbowAngle <= 125) s4 = 4;
+    else s4 = 2;
+
+    // Score 5: Knee bend
+    let s5 = (aiData.kneeFlexions > 5) ? 4 : 2;
+
+    // Score 6: Follow through wrist flick
+    let s6 = (highRatio > 0.5) ? 4 : 3;
+
+    document.getElementById('score-0').value = s1;
+    document.getElementById('score-1').value = s2;
+    document.getElementById('score-2').value = s3;
+    document.getElementById('score-3').value = s4;
+    document.getElementById('score-4').value = s5;
+    document.getElementById('score-5').value = s6;
+
+    updateScoreColors();
     calculateTotalScore();
   }
 
@@ -651,13 +793,13 @@
       ["Performer Name", performer],
       ["Class", className],
       [""],
-      ["Criteria", "Score"],
-      ["Feet shoulder-width apart", document.querySelectorAll('.score-select')[0].value],
-      ["Non-shooting hand on side & shooting hand under ball", document.querySelectorAll('.score-select')[1].value],
-      ["Fingers open, ball resting high above head", document.querySelectorAll('.score-select')[2].value],
-      ["Shooting arm elbow at right angle pointing to net", document.querySelectorAll('.score-select')[3].value],
-      ["Bend knees and straighten arm when shooting", document.querySelectorAll('.score-select')[4].value],
-      ["Flick wrist on follow through", document.querySelectorAll('.score-select')[5].value],
+      ["Criteria", "Score (1-5)"],
+      ["Feet shoulder-width apart", document.getElementById('score-0').value],
+      ["Non-shooting hand on side & shooting hand under ball", document.getElementById('score-1').value],
+      ["Fingers open, ball resting high above head", document.getElementById('score-2').value],
+      ["Shooting arm elbow at right angle pointing to net", document.getElementById('score-3').value],
+      ["Bend knees and straighten arm when shooting", document.getElementById('score-4').value],
+      ["Flick wrist on follow through", document.getElementById('score-5').value],
       [""],
       ["Performer Dialogue Agreement", agreement],
       ["Performer Reflection", reflection]
@@ -670,6 +812,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    updateScoreColors();
     calculateTotalScore();
   });
 </script>
