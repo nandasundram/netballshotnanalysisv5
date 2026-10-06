@@ -68,10 +68,10 @@
 
         <!-- Video Player / Overlay Canvas container -->
         <div class="relative aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center border border-slate-300 shadow-inner">
-          <video id="videoElement" class="hidden" playsinline controls></video>
-          <canvas id="outputCanvas" class="w-full h-full object-contain"></canvas>
+          <video id="videoElement" class="w-full h-full object-contain absolute inset-0" playsinline controls crossorigin="anonymous"></video>
+          <canvas id="outputCanvas" class="w-full h-full object-contain absolute inset-0 pointer-events-none z-10"></canvas>
           
-          <div id="placeholderText" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+          <div id="placeholderText" class="absolute inset-0 z-20 flex flex-col items-center justify-center text-slate-400 p-4 text-center bg-black/80">
             <svg class="w-12 h-12 mb-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
             </svg>
@@ -100,7 +100,7 @@
           
           <div id="progressContainer" class="hidden w-full">
             <div class="flex justify-between text-xs text-slate-600 mb-1">
-              <span>Analyzing motion frame-by-frame...</span>
+              <span>Analyzing motion in real-time...</span>
               <span id="progressText">0%</span>
             </div>
             <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
@@ -122,7 +122,7 @@
         </div>
 
         <p class="text-xs text-slate-500 mb-4">
-          Features evaluated by MediaPipe AI. Ratings (1-2: Absent, 3: Neutral, 4-5: Present) are auto-assigned based on AI confidence.
+          Features evaluated by MediaPipe AI. Ratings (1-2: Absent, 3: Neutral, 4-5: Present) are auto-assigned based on AI analysis.
         </p>
 
         <!-- Checklist Items Container -->
@@ -209,76 +209,4 @@
           </div>
 
           <!-- STAGE 3 -->
-          <div class="border rounded-lg p-3 bg-slate-50 space-y-3">
-            <span class="text-xs font-bold text-indigo-700 uppercase tracking-wider block">Stage 3: Execution & Follow Through</span>
-            
-            <!-- Feature 3.1 -->
-            <div class="flex items-start justify-between gap-3 border-b pb-2">
-              <div class="flex-1">
-                <p class="text-sm font-medium text-slate-800">Bend knees and straighten arm when shooting</p>
-                <span id="s3_1_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
-              </div>
-              <div class="flex flex-col items-end gap-1">
-                <button onclick="toggleFeature('item_s3_1')" id="btn_item_s3_1" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
-                <select id="score_item_s3_1" class="text-xs border rounded px-1.5 py-0.5 bg-white">
-                  <option value="5">Score: 5 (Excellent)</option>
-                  <option value="4">Score: 4 (Good)</option>
-                  <option value="3" selected>Score: 3 (Neutral)</option>
-                  <option value="2">Score: 2 (Needs Work)</option>
-                  <option value="1">Score: 1 (Poor)</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Feature 3.2 -->
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex-1">
-                <p class="text-sm font-medium text-slate-800">Flick wrist on follow through</p>
-                <span id="s3_2_status" class="inline-block text-xs mt-1 text-slate-500">Awaiting analysis...</span>
-              </div>
-              <div class="flex flex-col items-end gap-1">
-                <button onclick="toggleFeature('item_s3_2')" id="btn_item_s3_2" class="px-2.5 py-1 text-xs font-bold rounded border bg-amber-100 text-amber-800 border-amber-300">➖ Neutral</button>
-                <select id="score_item_s3_2" class="text-xs border rounded px-1.5 py-0.5 bg-white">
-                  <option value="5">Score: 5 (Excellent)</option>
-                  <option value="4">Score: 4 (Good)</option>
-                  <option value="3" selected>Score: 3 (Neutral)</option>
-                  <option value="2">Score: 2 (Needs Work)</option>
-                  <option value="1">Score: 1 (Poor)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <script>
-    // State management for checklist features: 'present', 'absent', 'neutral'
-    const featureStates = {
-      item_s1: 'neutral',
-      item_s2_1: 'neutral',
-      item_s2_2: 'neutral',
-      item_s2_3: 'neutral',
-      item_s3_1: 'neutral',
-      item_s3_2: 'neutral'
-    };
-
-    const videoInput = document.getElementById('videoInput');
-    const videoElement = document.getElementById('videoElement');
-    const outputCanvas = document.getElementById('outputCanvas');
-    const canvasCtx = outputCanvas.getContext('2d');
-    const processBtn = document.getElementById('processBtn');
-    const placeholderText = document.getElementById('placeholderText');
-    const progressContainer = document.getElementById('progressContainer');
-    const progressBar = document.getElementById('progressBar');
-    const progressText = document.getElementById('progressText');
-
-    let poseDetector;
-
-    // Initialize MediaPipe Pose
-    function initMediaPipe() {
-      poseDetector = new Pose({
-        locateFile: (file)
+          <div class="border rounded-lg
