@@ -297,26 +297,28 @@
           <span class="text-[10px] font-semibold uppercase px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full">CCI 1, 2 & 3</span>
         </div>
 
-        <!-- STEP A: OBSERVER FEEDBACK (CCI 1.3 & CCI 2.3) -->
-        <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs space-y-2">
+        <!-- STEP A: OBSERVER FEEDBACK (2 STRENGTHS & 2 AREAS TO IMPROVE WITH IMPACT) -->
+        <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs space-y-3">
           <div class="flex justify-between items-center">
             <span class="font-bold text-xs text-indigo-800">
-              Step 1 (Observer → Performer): Empathetic Feedback & AI Synthesis
+              Step 1 (Observer → Performer): Empathetic Feedback & Impact Analysis
             </span>
             <span class="text-[10px] text-slate-400">CCI 1.3 | CCI 2.3</span>
           </div>
           <p class="text-[11px] text-slate-500">
-            <em>Guide for Observer:</em> Deliver feedback respectfully. Use empathetic sentence starters like <em>"I noticed from the video AI that..."</em> or <em>"Your strength was..."</em>.
+            <em>Guide for Observer:</em> Share 2 key strengths and 2 growth areas. Always explain <strong>how each technique impacts shot success</strong>.
           </p>
 
           <div class="space-y-2 text-xs pt-1">
             <div>
-              <label class="block font-semibold text-slate-700 mb-1">🌟 Identified Strengths (What went well):</label>
-              <textarea id="observerStrengths" rows="2" class="w-full p-2 border rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500" placeholder="e.g. You maintained a strong shoulder-width stance and bent knees well!"></textarea>
+              <label class="block font-semibold text-slate-700 mb-1">🌟 2 Key Strengths & Their Biomechanical Impact:</label>
+              <textarea id="observerStrengths" rows="3" class="w-full p-2 border rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500" placeholder="1. Bending knees well allows for greater vertical height & momentum.
+2. Holding ball high above head creates a higher release point over defenders."></textarea>
             </div>
             <div>
-              <label class="block font-semibold text-slate-700 mb-1">🎯 Co-Constructed Goal (1 specific area to refine):</label>
-              <textarea id="observerGoal" rows="2" class="w-full p-2 border rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500" placeholder="e.g. Let's work on pointing your elbow to 90 degrees before releasing."></textarea>
+              <label class="block font-semibold text-slate-700 mb-1">🎯 2 Areas to Improve & Their Biomechanical Impact:</label>
+              <textarea id="observerGoal" rows="3" class="w-full p-2 border rounded bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500" placeholder="1. Pointing elbow towards ring at 90° ensures straight directional alignment into the net.
+2. Complete wrist flick on follow-through generates backspin, softening the ball drop on the rim."></textarea>
             </div>
           </div>
         </div>
@@ -346,7 +348,7 @@
           <!-- Performer Voice / Notes -->
           <div>
             <label class="block font-semibold text-slate-700 mb-1 text-xs">Performer's Perspective / Action Plan:</label>
-            <textarea id="performerNotes" rows="2" class="w-full p-2 border rounded text-xs bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500" placeholder="e.g. I agree about the elbow, but during the shot I felt balanced. Next round I will focus on holding my follow-through flick longer."></textarea>
+            <textarea id="performerNotes" rows="2" class="w-full p-2 border rounded text-xs bg-slate-50 focus:bg-white focus:ring-1 focus:ring-indigo-500" placeholder="e.g. I agree that bending my knees gave me good height, but I felt my elbow alignment was affected by the camera angle. Next round I will focus on pointing my elbow directly to the ring."></textarea>
           </div>
         </div>
 
@@ -684,28 +686,66 @@
       }
     }
 
-    // Auto-generate empathetic observer coaching prompts (CCI 1.3 & 2.3)
+    // Auto-generate empathetic observer coaching prompts with 2 STRENGTHS + 2 IMPROVEMENTS + BIOMECHANICAL IMPACT
     function generateAutoPeerFeedback() {
-      let strengths = [];
-      let growth = [];
+      // Feature definition library mapping criteria -> technical description & impact
+      const criteriaMap = {
+        s1: {
+          name: "shoulder-width stance",
+          impact: "providing a solid base of balance and consistent force distribution"
+        },
+        s2_1: {
+          name: "hand placement under the ball",
+          impact: "giving you optimal push control and ball trajectory control"
+        },
+        s2_2: {
+          name: "holding the ball high above your head",
+          impact: "creating a higher release point that makes it harder for defender to block"
+        },
+        s2_3: {
+          name: "elbow at a clean 90° angle towards the net",
+          impact: "ensuring straight directional force directly towards the goal ring"
+        },
+        s3_1: {
+          name: "knee dip and arm extension",
+          impact: "generating upward vertical power and smooth momentum transfer"
+        },
+        s3_2: {
+          name: "wrist flick follow-through",
+          impact: "imparting backspin on the ball to soften its drop on the ring"
+        }
+      };
 
-      if (parseInt(document.getElementById('score_item_s1').value) >= 4) strengths.push("a balanced shoulder-width stance");
-      else growth.push("adjusting stance width to shoulder-width apart");
+      let evaluatedFeatures = [
+        { id: 's1', score: parseInt(document.getElementById('score_item_s1').value) },
+        { id: 's2_1', score: parseInt(document.getElementById('score_item_s2_1').value) },
+        { id: 's2_2', score: parseInt(document.getElementById('score_item_s2_2').value) },
+        { id: 's2_3', score: parseInt(document.getElementById('score_item_s2_3').value) },
+        { id: 's3_1', score: parseInt(document.getElementById('score_item_s3_1').value) },
+        { id: 's3_2', score: parseInt(document.getElementById('score_item_s3_2').value) }
+      ];
 
-      if (parseInt(document.getElementById('score_item_s2_2').value) >= 4) strengths.push("holding the ball high above your head");
-      else growth.push("raising the ball higher above head level before starting the shoot");
+      // Sort by score descending
+      evaluatedFeatures.sort((a, b) => b.score - a.score);
 
-      if (parseInt(document.getElementById('score_item_s2_3').value) >= 4) strengths.push("keeping your shooting elbow at a clean right angle pointing to the net");
-      else growth.push("pointing your shooting elbow directly toward the ring at 90 degrees");
+      // Top 2 features = Strengths; Bottom 2 features = Growth areas
+      let strengthList = [evaluatedFeatures[0], evaluatedFeatures[1]];
+      let growthList = [evaluatedFeatures[5], evaluatedFeatures[4]];
 
-      if (parseInt(document.getElementById('score_item_s3_1').value) >= 4) strengths.push("great knee dip and power transfer");
-      else growth.push("dipping your knees deeper during release to generate arc");
+      let sText = "🌟 2 Identified Strengths & Biomechanical Impact:\n";
+      strengthList.forEach((item, index) => {
+        const info = criteriaMap[item.id];
+        sText += `${index + 1}. Great ${info.name}! (Impact: This helped by ${info.impact}).\n`;
+      });
 
-      const sText = strengths.length > 0 ? `I noticed from the video AI that you executed ${strengths.join(" and ")} very well!` : "I noticed great effort in your shot execution!";
-      const gText = growth.length > 0 ? `To co-construct our goal, let's focus on ${growth[0]} in our next trial.` : "Let's work together to maintain this consistent technique!";
+      let gText = "🎯 2 Key Focus Areas to Improve & Biomechanical Impact:\n";
+      growthList.forEach((item, index) => {
+        const info = criteriaMap[item.id];
+        gText += `${index + 1}. Work on your ${info.name}. (Impact: Improving this will ${info.impact}).\n`;
+      });
 
-      document.getElementById('observerStrengths').value = sText;
-      document.getElementById('observerGoal').value = gText;
+      document.getElementById('observerStrengths').value = sText.trim();
+      document.getElementById('observerGoal').value = gText.trim();
     }
 
     // Export Excel Functionality with full E21CC 2-Way Dialogue
@@ -734,8 +774,8 @@
         ["Stage 3", "Flick wrist on follow through", featureStates.item_s3_2.toUpperCase(), document.getElementById('score_item_s3_2').value],
         [],
         ["MOE E21CC 2-Way Dialogue Record"],
-        ["CCI 1.3 & 2.3 - Observer's Strengths Feedback", document.getElementById('observerStrengths').value],
-        ["CCI 1.3 & 2.3 - Co-Constructed Goal", document.getElementById('observerGoal').value],
+        ["CCI 1.3 & 2.3 - 2 Strengths & Biomechanical Impact", document.getElementById('observerStrengths').value],
+        ["CCI 1.3 & 2.3 - 2 Focus Areas & Biomechanical Impact", document.getElementById('observerGoal').value],
         ["CCI 3.3 - Performer's Agreement Status", document.getElementById('performerAgreement').value],
         ["CCI 3.3 & 5.3 - Performer's Reflection / Action Plan", document.getElementById('performerNotes').value]
       ];
