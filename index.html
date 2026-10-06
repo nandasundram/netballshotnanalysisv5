@@ -21,40 +21,51 @@
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 15px;
+      margin: 10px 15px;
       background-color: #f4f7f6;
       color: #333;
+      font-size: 0.85rem; /* Squeezed compact font size */
     }
 
     h1 {
       text-align: center;
       color: #2c3e50;
-      margin-bottom: 20px;
-      font-size: 1.8em;
+      margin: 5px 0 12px 0;
+      font-size: 1.4rem;
+    }
+
+    h3 {
+      font-size: 1rem;
+      margin: 0 0 8px 0;
+    }
+
+    h4 {
+      font-size: 0.9rem;
+      margin: 6px 0;
     }
 
     /* 2-COLUMN MAIN SPLIT LAYOUT */
     .main-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 12px;
       align-items: start;
     }
 
     .card {
       border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 18px;
-      margin-bottom: 18px;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
       background-color: #fff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     }
 
+    /* TOP ROW: Observer, Performer, Class */
     .roles-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 10px;
-      margin-bottom: 10px;
     }
 
     .form-group {
@@ -64,29 +75,34 @@
 
     .form-group label {
       font-weight: bold;
-      font-size: 0.85em;
-      margin-bottom: 4px;
+      font-size: 0.75rem;
+      margin-bottom: 2px;
     }
 
     .form-group input {
-      padding: 6px;
+      padding: 4px 6px;
       border: 1px solid var(--border-color);
       border-radius: 4px;
+      font-size: 0.8rem;
     }
 
-    /* LEFT SIDE: Video Container */
+    /* LEFT SIDE: Video Container & Button */
     .video-container {
       position: relative;
       width: 100%;
       background: #000;
-      border-radius: 8px;
+      border-radius: 6px;
       overflow: hidden;
-      margin-top: 12px;
+      margin-top: 8px;
+      max-height: 380px; /* Constrained height to minimize vertical scrolling */
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     video, canvas {
-      width: 100%;
-      height: auto;
+      max-width: 100%;
+      max-height: 380px;
       display: block;
     }
 
@@ -96,17 +112,43 @@
       left: 0;
     }
 
+    .btn-action {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 600;
+      width: 100%;
+      transition: background 0.2s;
+    }
+
+    .btn-action:hover {
+      background-color: #004085;
+    }
+
+    .btn-run-ai {
+      background-color: #16a34a;
+      margin-top: 8px;
+    }
+
+    .btn-run-ai:hover {
+      background-color: #15803d;
+    }
+
     /* RIGHT SIDE TOP: Rubric Table */
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
-      font-size: 0.9em;
+      margin-top: 4px;
+      font-size: 0.8rem;
     }
 
     th, td {
       border: 1px solid var(--border-color);
-      padding: 8px;
+      padding: 4px 6px;
       text-align: left;
     }
 
@@ -116,84 +158,72 @@
 
     select.score-select, select.impact-select {
       width: 100%;
-      padding: 6px;
+      padding: 3px 5px;
       border-radius: 4px;
       border: 1px solid #ccc;
-      font-size: 0.9em;
+      font-size: 0.8rem;
     }
 
     .total-score-box {
-      margin-top: 12px;
-      font-size: 1.1em;
+      margin-top: 6px;
+      font-size: 0.9rem;
       font-weight: bold;
       background: #e2e8f0;
-      padding: 10px;
-      border-radius: 6px;
+      padding: 6px 10px;
+      border-radius: 4px;
       text-align: right;
     }
 
     /* RIGHT SIDE BOTTOM: Feedback Dropdowns */
     .match-row {
-      margin-bottom: 12px;
-      padding: 10px;
+      margin-bottom: 8px;
+      padding: 6px 8px;
       background-color: #f8fafc;
       border: 1px solid #e2e8f0;
-      border-radius: 6px;
+      border-radius: 4px;
     }
 
     .skill-label {
       font-weight: bold;
-      font-size: 0.9em;
-      margin-bottom: 5px;
+      font-size: 0.78rem;
+      margin-bottom: 3px;
       color: #1e293b;
     }
 
     .coaching-guide-box {
       background-color: #eff6ff;
-      border-left: 4px solid var(--primary-color);
-      padding: 12px;
-      margin-top: 12px;
+      border-left: 3px solid var(--primary-color);
+      padding: 8px;
+      margin-top: 8px;
       border-radius: 4px;
-      font-size: 0.88em;
+      font-size: 0.78rem;
       display: none;
     }
 
     .status-text {
-      font-size: 0.85em;
+      font-size: 0.75rem;
       font-weight: bold;
-      margin-top: 4px;
+      margin-top: 2px;
       display: block;
-    }
-
-    button {
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.95em;
-      width: 100%;
-    }
-
-    button:hover {
-      background-color: #004085;
     }
 
     textarea {
       width: 100%;
-      height: 60px;
+      height: 42px;
       border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 8px;
+      border-radius: 4px;
+      padding: 4px 6px;
       box-sizing: border-box;
-      margin-top: 6px;
-      font-size: 0.9em;
+      margin-top: 4px;
+      font-size: 0.8rem;
     }
 
-    /* Responsive layout fallback */
+    /* Responsive adjustment for small screens */
     @media (max-width: 850px) {
       .main-grid {
+        grid-template-columns: 1fr;
+      }
+      .roles-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -203,16 +233,20 @@
 
   <h1>🏀 Netball Shooting Analysis & E21CC Dialogue</h1>
 
-  <!-- PAIR NAMES -->
-  <div class="card" style="margin-bottom: 15px;">
+  <!-- PAIR & CLASS INFORMATION -->
+  <div class="card" style="margin-bottom: 10px;">
     <div class="roles-grid">
       <div class="form-group">
         <label for="observer-name">Observer Name:</label>
-        <input type="text" id="observer-name" placeholder="Enter Observer Name">
+        <input type="text" id="observer-name" placeholder="Observer Name">
       </div>
       <div class="form-group">
         <label for="performer-name">Performer Name:</label>
-        <input type="text" id="performer-name" placeholder="Enter Performer Name">
+        <input type="text" id="performer-name" placeholder="Performer Name">
+      </div>
+      <div class="form-group">
+        <label for="class-name">Class:</label>
+        <input type="text" id="class-name" placeholder="e.g. 3A, Sec 2-1">
       </div>
     </div>
   </div>
@@ -220,12 +254,14 @@
   <!-- MAIN 2-COLUMN SPLIT -->
   <div class="main-grid">
 
-    <!-- LEFT COLUMN: VIDEO UPLOAD & AI OVERLAY -->
+    <!-- LEFT COLUMN: VIDEO UPLOAD & AI RUNNER -->
     <div class="left-column">
       <div class="card">
-        <h3>📹 1. Upload Video with AI Analysis</h3>
-        <input type="file" id="video-input" accept="video/*">
+        <h3>📹 1. Upload Video & Run AI Analysis</h3>
+        <input type="file" id="video-input" accept="video/*" style="font-size: 0.8rem; width: 100%;">
         
+        <button id="run-ai-btn" class="btn-action btn-run-ai" onclick="runAiAnalysis()">▶ Run AI Analysis</button>
+
         <div class="video-container">
           <video id="input-video" controls style="display:none;"></video>
           <canvas id="output-canvas"></canvas>
@@ -239,13 +275,12 @@
       <!-- RIGHT TOP: AI ANALYSIS SCORECARD -->
       <div class="card">
         <h3>📊 2. Technical Assessment Results</h3>
-        <p style="font-size:0.85em; color:#666; margin-top:-5px;">Observer can adjust scores after reviewing video AI overlays.</p>
         
         <table>
           <thead>
             <tr>
               <th>Criteria</th>
-              <th style="width: 85px;">Score</th>
+              <th style="width: 70px;">Score</th>
             </tr>
           </thead>
           <tbody>
@@ -307,11 +342,10 @@
 
       <!-- RIGHT BOTTOM: STEP 1 DROPDOWN MATCHING FEEDBACK -->
       <div class="card">
-        <h3>💬 3. Step 1 (Observer → Performer): Feedback Dropboxes</h3>
-        <p style="font-size:0.85em; color:#666; margin-top:-5px;">Match each skill to its correct biomechanical impact.</p>
+        <h3>💬 3. Step 1: Feedback Dropboxes</h3>
 
         <!-- STRENGTHS SECTION -->
-        <h4 style="color:#15803d; margin-bottom: 8px;">Phase 1: Identify 2 Strengths</h4>
+        <h4 style="color:#15803d;">Phase 1: Identify 2 Strengths</h4>
         
         <!-- Strength 1 -->
         <div class="match-row">
@@ -325,7 +359,7 @@
             <option value="maximizes power">Bend knees and straighten arm when shooting</option>
             <option value="creates backspin to improve accuracy">Flick wrist on follow through</option>
           </select>
-          <div style="margin-top: 6px;">
+          <div style="margin-top: 4px;">
             <select id="str-impact-1" class="impact-select" onchange="checkMatch('str-skill-1', 'str-impact-1', 'str-status-1')">
               <option value="">-- Select Matching Impact --</option>
             </select>
@@ -345,7 +379,7 @@
             <option value="maximizes power">Bend knees and straighten arm when shooting</option>
             <option value="creates backspin to improve accuracy">Flick wrist on follow through</option>
           </select>
-          <div style="margin-top: 6px;">
+          <div style="margin-top: 4px;">
             <select id="str-impact-2" class="impact-select" onchange="checkMatch('str-skill-2', 'str-impact-2', 'str-status-2')">
               <option value="">-- Select Matching Impact --</option>
             </select>
@@ -354,14 +388,13 @@
         </div>
 
         <div id="strength-coaching-guide" class="coaching-guide-box">
-          <b>💡 Observer Praise Coaching Tip:</b><br>
-          <em>"I noticed your skill execution was solid, which directly contributed to good balance and stability."</em>
+          <b>💡 Praise Coaching Tip:</b> <em>"I noticed your skill execution was solid, which directly contributed to good balance and stability."</em>
         </div>
 
-        <hr style="margin: 15px 0; border:0; border-top:1px solid #eee;">
+        <hr style="margin: 10px 0; border:0; border-top:1px solid #eee;">
 
         <!-- AREAS FOR IMPROVEMENT SECTION -->
-        <h4 style="color:#b91c1c; margin-bottom: 8px;">Phase 2: Identify 2 Areas for Improvement</h4>
+        <h4 style="color:#b91c1c;">Phase 2: Identify 2 Areas for Improvement</h4>
         
         <!-- Improvement 1 -->
         <div class="match-row">
@@ -375,7 +408,7 @@
             <option value="maximizes power">Bend knees and straighten arm when shooting</option>
             <option value="creates backspin to improve accuracy">Flick wrist on follow through</option>
           </select>
-          <div style="margin-top: 6px;">
+          <div style="margin-top: 4px;">
             <select id="imp-impact-1" class="impact-select" onchange="checkMatch('imp-skill-1', 'imp-impact-1', 'imp-status-1')">
               <option value="">-- Select Matching Impact --</option>
             </select>
@@ -395,7 +428,7 @@
             <option value="maximizes power">Bend knees and straighten arm when shooting</option>
             <option value="creates backspin to improve accuracy">Flick wrist on follow through</option>
           </select>
-          <div style="margin-top: 6px;">
+          <div style="margin-top: 4px;">
             <select id="imp-impact-2" class="impact-select" onchange="checkMatch('imp-skill-2', 'imp-impact-2', 'imp-status-2')">
               <option value="">-- Select Matching Impact --</option>
             </select>
@@ -404,28 +437,27 @@
         </div>
 
         <div id="improvement-coaching-guide" class="coaching-guide-box">
-          <b>💡 Observer Advice Coaching Tip:</b><br>
-          <em>"Next time, try focusing on extending your elbow smoothly to maximize your power and shooting accuracy."</em>
+          <b>💡 Advice Coaching Tip:</b> <em>"Next time, try focusing on extending your elbow smoothly to maximize your power and accuracy."</em>
         </div>
 
       </div>
 
       <!-- STEP 2: PERFORMER REFLECTION -->
       <div class="card">
-        <h3>🗣️ 4. Step 2 (Performer → Observer): Dialogue Response</h3>
-        <label><strong>Do you agree with the feedback and scores?</strong></label>
-        <select id="performer-agreement" class="impact-select" style="margin-top:5px;">
+        <h3>🗣️ 4. Step 2: Performer Dialogue Response</h3>
+        <label><strong>Do you agree with feedback and scores?</strong></label>
+        <select id="performer-agreement" class="impact-select" style="margin-top:3px;">
           <option value="">-- Select Response --</option>
           <option value="agree">Fully Agree</option>
           <option value="partially">Partially Agree</option>
           <option value="disagree">Respectfully Disagree / Challenge</option>
         </select>
 
-        <label style="display:block; margin-top:10px;"><strong>Performer Reflection / Reason:</strong></label>
-        <textarea id="performer-reflection" placeholder="e.g., I agree that bending my knees gives more power, but I felt my camera angle didn't capture my arm extension clearly..."></textarea>
+        <label style="display:block; margin-top:6px;"><strong>Performer Reflection:</strong></label>
+        <textarea id="performer-reflection" placeholder="e.g., I agree that bending my knees gives more power..."></textarea>
 
-        <div style="margin-top: 15px;">
-          <button onclick="exportToExcel()">📊 Export Dialogue to Excel</button>
+        <div style="margin-top: 10px;">
+          <button class="btn-action" onclick="exportToExcel()">📊 Export Dialogue to Excel</button>
         </div>
       </div>
 
@@ -505,6 +537,7 @@
   const videoElement = document.getElementById('input-video');
   const canvasElement = document.getElementById('output-canvas');
   const canvasCtx = canvasElement.getContext('2d');
+  let selectedFile = null;
 
   const pose = new Pose({
     locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
@@ -526,34 +559,43 @@
     canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
 
     if (results.poseLandmarks) {
-      drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 4 });
+      drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 3 });
       drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#FF0000', lineWidth: 2 });
     }
     canvasCtx.restore();
   });
 
   document.getElementById('video-input').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      videoElement.src = url;
-      videoElement.style.display = 'block';
-      videoElement.play();
-
-      async function processFrame() {
-        if (!videoElement.paused && !videoElement.ended) {
-          await pose.send({ image: videoElement });
-          requestAnimationFrame(processFrame);
-        }
-      }
-      videoElement.addEventListener('play', () => processFrame());
-    }
+    selectedFile = e.target.files[0];
   });
+
+  // Explicit Button Trigger to Run AI Analysis
+  function runAiAnalysis() {
+    if (!selectedFile) {
+      alert("Please choose a video file first!");
+      return;
+    }
+
+    const url = URL.createObjectURL(selectedFile);
+    videoElement.src = url;
+    videoElement.style.display = 'block';
+    videoElement.play();
+
+    async function processFrame() {
+      if (!videoElement.paused && !videoElement.ended) {
+        await pose.send({ image: videoElement });
+        requestAnimationFrame(processFrame);
+      }
+    }
+    
+    videoElement.addEventListener('play', () => processFrame());
+  }
 
   // Excel Export
   function exportToExcel() {
     const observer = document.getElementById('observer-name').value || 'N/A';
     const performer = document.getElementById('performer-name').value || 'N/A';
+    const className = document.getElementById('class-name').value || 'N/A';
     const agreement = document.getElementById('performer-agreement').value || 'N/A';
     const reflection = document.getElementById('performer-reflection').value || 'N/A';
 
@@ -561,6 +603,7 @@
       ["Netball Shooting Analysis & Peer Dialogue Summary"],
       ["Observer Name", observer],
       ["Performer Name", performer],
+      ["Class", className],
       [""],
       ["Criteria", "Score"],
       ["Feet shoulder-width apart", document.querySelectorAll('.score-select')[0].value],
@@ -577,7 +620,7 @@
     const worksheet = XLSX.utils.aoa_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Analysis Results");
-    XLSX.writeFile(workbook, "Netball_Shooting_Analysis_Dialogue.xlsx");
+    XLSX.writeFile(workbook, `Netball_Analysis_${performer}_${className}.xlsx`);
   }
 
   document.addEventListener('DOMContentLoaded', () => {
