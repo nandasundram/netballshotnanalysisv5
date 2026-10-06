@@ -55,15 +55,39 @@
   <!-- Main Content Layout -->
   <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-    <!-- LEFT COLUMN: Video Upload, Player & Technical Analysis (7 cols) -->
+    <!-- LEFT COLUMN: Video Upload, Guidelines, Player & Technical Analysis (7 cols) -->
     <section class="lg:col-span-7 flex flex-col gap-6">
       
-      <!-- Video Player Card -->
+      <!-- Video Player & Upload Card -->
       <div class="glass-card rounded-xl p-5 shadow-sm border border-slate-200">
         <h2 class="text-lg font-bold text-slate-700 mb-3 flex items-center justify-between">
-          <span>1. Video Upload & AI Feature Detection</span>
+          <span>1. Video Recording & AI Feature Detection</span>
           <span id="aiStatusBadge" class="text-xs px-2.5 py-1 rounded-full bg-slate-200 text-slate-600 font-normal">AI Ready</span>
         </h2>
+
+        <!-- QUICK VIDEO RECORDING GUIDELINES -->
+        <div class="bg-amber-50/80 border border-amber-200/80 rounded-lg p-3 mb-4">
+          <p class="text-xs font-bold text-amber-900 mb-2 flex items-center gap-1.5">
+            <span>📹</span> Video Recording Quick Checklist (Observer Guidance):
+          </p>
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-[11px] font-medium text-amber-950">
+            <div class="flex items-center gap-1 bg-white/80 px-2 py-1.5 rounded border border-amber-200">
+              <span>📐</span> <span>Side view</span>
+            </div>
+            <div class="flex items-center gap-1 bg-white/80 px-2 py-1.5 rounded border border-amber-200">
+              <span>🧍</span> <span>Whole body</span>
+            </div>
+            <div class="flex items-center gap-1 bg-white/80 px-2 py-1.5 rounded border border-amber-200">
+              <span>☀️</span> <span>Good lighting</span>
+            </div>
+            <div class="flex items-center gap-1 bg-white/80 px-2 py-1.5 rounded border border-amber-200">
+              <span>👤</span> <span>1 performer</span>
+            </div>
+            <div class="flex items-center gap-1 bg-white/80 px-2 py-1.5 rounded border border-amber-200">
+              <span>📱</span> <span>Portrait mode</span>
+            </div>
+          </div>
+        </div>
 
         <!-- File Input -->
         <div class="mb-4">
@@ -83,7 +107,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
             </svg>
             <p class="font-medium text-sm">Observer: Upload performer's video clip here</p>
-            <p class="text-xs text-slate-500 mt-1">(Ensure side-profile view for best pose estimation)</p>
+            <p class="text-xs text-slate-500 mt-1">(Ensure portrait, side-profile view with clear lighting)</p>
           </div>
         </div>
 
@@ -632,7 +656,7 @@
         document.getElementById('s3_1_status').innerText = `Good knee dip & extension (${Math.round(armExt)}°)`;
       } else if (armExt > 150) {
         updateFeatureState('item_s3_1', 'neutral', '3');
-        document.getElementById('s3_3_status').innerText = `Partial extension (${Math.round(armExt)}°)`;
+        document.getElementById('s3_1_status').innerText = `Partial extension (${Math.round(armExt)}°)`;
       } else if (armExt > 135) {
         updateFeatureState('item_s3_1', 'absent', '2');
         document.getElementById('s3_1_status').innerText = `Limited arm extension (${Math.round(armExt)}°)`;
