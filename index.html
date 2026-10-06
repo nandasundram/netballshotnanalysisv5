@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Netball Shooting Analysis & E21CC Co-Construction Dialogue</title>
+  <title>Netball Shooting Analysis & E21CC Dialogue</title>
 
   <!-- Google MediaPipe & SheetJS CDNs -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -191,7 +191,7 @@
       font-size: 0.9em;
     }
 
-    /* Responsive adjustment for small screens */
+    /* Responsive layout fallback */
     @media (max-width: 850px) {
       .main-grid {
         grid-template-columns: 1fr;
@@ -396,7 +396,7 @@
             <option value="creates backspin to improve accuracy">Flick wrist on follow through</option>
           </select>
           <div style="margin-top: 6px;">
-            <select id="imp-impact-1" class="impact-select" onchange="checkMatch('imp-skill-2', 'imp-impact-2', 'imp-status-2')">
+            <select id="imp-impact-2" class="impact-select" onchange="checkMatch('imp-skill-2', 'imp-impact-2', 'imp-status-2')">
               <option value="">-- Select Matching Impact --</option>
             </select>
           </div>
