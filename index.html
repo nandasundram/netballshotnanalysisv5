@@ -1,34 +1,3 @@
-Here is the complete, full index.html file code.
-
-Key Improvements Fixed in this Version:
-Auto-Mirror Video Sync: Selecting or dropping a video into the Primary AI Analysis Upload immediately mirrors it to the Manual Inspection & Slow-Motion Player automatically (bringing back the seamless dual-player behavior you liked!).
-
-Robust Multi-Sample AI Pose Evaluation Engine:
-
-Rebuilt the frame-sampling engine to seek across key phases of the uploaded clip (0.15s, 0.35s, 0.55s, 0.75s, 0.90s).
-
-Uses real MediaPipe Pose landmark coordinate geometry (elbow flexion angle, knee flex angle, wrist elevation above head level, support hand position, stance width ratio relative to shoulders).
-
-Provides consistent, reproducible, and distinct scores (1–5) based on actual player execution while dynamically color-highlighting badges (Green = 4–5, Yellow = 3, Red = 1–2).
-
-Automatically resets scores to default 3 whenever a new file is uploaded before clicking "▶ Run AI Analysis".
-
-Complete 5-Section Layout Preserved:
-
-Filming Requirements (Top-Left with emojis) & Participant Details
-
-Section 1: Primary Video Upload & AI Analysis (Button directly below player)
-
-Section 2: Manual Inspection & Slow-Motion Control (Auto-synced from primary upload or custom input)
-
-Section 3: Biomechanical Rubric Scoring (1 to 5, total out of 30)
-
-Section 4: Interactive Peer Dialogue & Impact Matching (2 Strengths AND 2 Areas for Improvement)
-
-Section 5: Performer Response Guidelines & Reflection Note
-
-Full index.html Code
-HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
