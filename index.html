@@ -28,7 +28,7 @@
       <!-- Top-Left: Filming Requirements Box -->
       <div class="md:col-span-4 bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-1">
         <h3 class="font-bold text-amber-900 text-xs flex items-center gap-1 mb-1">
-          📹 Videoing Requirements
+          📹 Filming Requirements
         </h3>
         <ul class="text-[11px] text-amber-800 space-y-1 leading-tight">
           <li>📱 <b>Portrait Mode:</b> Hold camera vertically in portrait orientation.</li>
@@ -297,7 +297,6 @@
         skillSel.innerHTML = '<option value="">-- Select Skill --</option>';
         impactSel.innerHTML = '<option value="">-- Select Impact --</option>';
 
-        // Shuffle skills and impacts independently
         const shuffledSkills = [...skillImpactPairs].sort(() => Math.random() - 0.5);
         const shuffledImpacts = [...skillImpactPairs].sort(() => Math.random() - 0.5);
 
@@ -337,7 +336,7 @@
       checkAllMatched();
     }
 
-    // Check if all 4 matches (2 strengths + 2 improvements) are correctly selected
+    // Check if all 4 matches are correctly selected
     function checkAllMatched() {
       const prefixes = ['s1', 's2', 'i1', 'i2'];
       const allCorrect = prefixes.every(prefix => {
@@ -432,9 +431,8 @@
       inspectionVideo.currentTime = Math.max(0, Math.min(inspectionVideo.duration, inspectionVideo.currentTime + timeOffset));
     }
 
-    // MediaPipe Pose Detector Setup
+    // MediaPipe Pose Detector Setup & Target Frame Seeking (Restored Yesterday's Reliable Engine)
     let poseEngine = null;
-    let landmarkFrames = [];
 
     function setupMediaPipe() {
       if (poseEngine) return;
@@ -452,6 +450,7 @@
 
     const poseCanvas = document.getElementById('poseCanvas');
     const canvasCtx = poseCanvas.getContext('2d');
+    let currentFramePose = null;
 
     function onPoseResults(results) {
       poseCanvas.width = aiVideo.videoWidth || 640;
@@ -460,7 +459,7 @@
       canvasCtx.clearRect(0, 0, poseCanvas.width, poseCanvas.height);
 
       if (results.poseLandmarks) {
-        landmarkFrames.push(results.poseLandmarks);
+        currentFramePose = results.poseLandmarks;
         drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 2 });
         drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#FF0000', lineWidth: 1, radius: 3 });
       }
@@ -474,7 +473,7 @@
       return angle;
     }
 
-    // Deterministic AI Analysis Runner
+    // Target Seeking AI Scanner
     async function runPoseAnalysis() {
       if (!aiVideo.src) {
         alert("Please upload a video clip first!");
@@ -482,96 +481,91 @@
       }
 
       setupMediaPipe();
-      landmarkFrames = [];
-      aiStatus.textContent = 'Scanning AI Frames...';
+      aiStatus.textContent = 'Analyzing Pose Data...';
 
-      // Frame sampling across the video duration
-      aiVideo.currentTime = 0;
-      const duration = aiVideo.duration || 3;
-      const step = Math.max(0.1, duration / 25);
+      const dur = aiVideo.duration || 3;
+      const checkPoints = [dur * 0.2, dur * 0.4, dur * 0.6, dur * 0.8];
+      let gatheredLandmarks = [];
 
-      while (aiVideo.currentTime < duration) {
+      for (let t of checkPoints) {
+        aiVideo.currentTime = t;
+        await new Promise(r => {
+          const onSeek = () => {
+            aiVideo.removeEventListener('seeked', onSeek);
+            r();
+          };
+          aiVideo.addEventListener('seeked', onSeek);
+        });
         await poseEngine.send({ image: aiVideo });
-        aiVideo.currentTime += step;
-        await new Promise(r => setTimeout(r, 30));
+        if (currentFramePose) {
+          gatheredLandmarks.push(currentFramePose);
+        }
       }
 
-      evaluatePoseLandmarks();
+      evaluateStaticPoses(gatheredLandmarks);
       aiStatus.textContent = 'Analysis Complete';
     }
 
-    // Calculate Scores Based on MediaPipe Biomechanical Thresholds
-    function evaluatePoseLandmarks() {
-      if (landmarkFrames.length === 0) {
+    // Deterministic Evaluation Algorithm based on Pose Angles
+    function evaluateStaticPoses(poses) {
+      if (poses.length === 0) {
         recalculateTotal();
         return;
       }
 
+      let bestElbowAngle = 180;
+      let maxElbowExt = 0;
       let minKneeAngle = 180;
-      let maxElbowAngle = 0;
-      let minElbowAngle = 180;
-      let maxWristYDiff = 0;
-      let wristHighFrames = 0;
-      let totalAnkleShoulderRatios = 0;
+      let isBallHigh = false;
+      let isHandUnder = false;
+      let stanceWidthSum = 0;
 
-      landmarkFrames.forEach(lm => {
-        // Knee Dip (Hip 24, Knee 26, Ankle 28)
-        if (lm[24] && lm[26] && lm[28]) {
-          const kAngle = calculateAngle(lm[24], lm[26], lm[28]);
-          if (kAngle < minKneeAngle) minKneeAngle = kAngle;
-        }
-
-        // Elbow Alignment & Extension (Shoulder 12, Elbow 14, Wrist 16)
-        if (lm[12] && lm[14] && lm[16]) {
-          const eAngle = calculateAngle(lm[12], lm[14], lm[16]);
-          if (eAngle > maxElbowAngle) maxElbowAngle = eAngle;
-          if (eAngle < minElbowAngle) minElbowAngle = eAngle;
-        }
-
-        // Wrist Height above Nose (Wrist 16, Nose 0)
-        if (lm[16] && lm[0]) {
-          if (lm[16].y < lm[0].y) wristHighFrames++;
-        }
-
-        // Non-shooting hand vs shooting hand height diff (15 vs 16)
-        if (lm[15] && lm[16]) {
-          const diff = Math.abs(lm[15].y - lm[16].y);
-          if (diff > maxWristYDiff) maxWristYDiff = diff;
-        }
-
-        // Feet Shoulder Width (Ankles 27/28 vs Shoulders 11/12)
+      poses.forEach(lm => {
+        // Stance width ratio
         if (lm[27] && lm[28] && lm[11] && lm[12]) {
-          const ankleW = Math.abs(lm[27].x - lm[28].x);
-          const shoulderW = Math.abs(lm[11].x - lm[12].x);
-          if (shoulderW > 0) totalAnkleShoulderRatios += (ankleW / shoulderW);
+          const aW = Math.abs(lm[27].x - lm[28].x);
+          const sW = Math.abs(lm[11].x - lm[12].x);
+          if (sW > 0) stanceWidthSum += (aW / sW);
+        }
+
+        // Ball / Hand elevation relative to Nose
+        if (lm[16] && lm[0] && lm[16].y < lm[0].y) {
+          isBallHigh = true;
+        }
+
+        // Support hand position
+        if (lm[15] && lm[16] && Math.abs(lm[15].y - lm[16].y) > 0.06) {
+          isHandUnder = true;
+        }
+
+        // Elbow angle
+        if (lm[12] && lm[14] && lm[16]) {
+          const ang = calculateAngle(lm[12], lm[14], lm[16]);
+          if (ang < bestElbowAngle) bestElbowAngle = ang;
+          if (ang > maxElbowExt) maxElbowExt = ang;
+        }
+
+        // Knee bend
+        if (lm[24] && lm[26] && lm[28]) {
+          const kAng = calculateAngle(lm[24], lm[26], lm[28]);
+          if (kAng < minKneeAngle) minKneeAngle = kAng;
         }
       });
 
-      const avgAnkleRatio = totalAnkleShoulderRatios / landmarkFrames.length;
+      const avgStance = stanceWidthSum / poses.length;
 
-      // Deterministic Scoring Calculations (Scale 1–5)
-      // Criteria 1: Feet stance ratio
-      let s1 = (avgAnkleRatio >= 0.75 && avgAnkleRatio <= 1.35) ? 5 : (avgAnkleRatio >= 0.5 ? 3 : 2);
-      
-      // Criteria 2: Non-shooting hand support
-      let s2 = maxWristYDiff > 0.08 ? 4 : 2;
+      // Assign scores on 1-5 scale
+      let s1 = (avgStance >= 0.75 && avgStance <= 1.35) ? 5 : (avgStance >= 0.5 ? 3 : 2);
+      let s2 = isHandUnder ? 4 : 2;
+      let s3 = isBallHigh ? 5 : 2;
+      let s4 = (bestElbowAngle >= 70 && bestElbowAngle <= 115) ? 5 : 3;
+      let s5 = (minKneeAngle < 155 && maxElbowExt > 145) ? 5 : 3;
+      let s6 = maxElbowExt > 150 ? 4 : 3;
 
-      // Criteria 3: Ball resting high
-      let s3 = wristHighFrames > 3 ? 5 : 2;
-
-      // Criteria 4: Shooting arm elbow angle
-      let s4 = (minElbowAngle >= 70 && minElbowAngle <= 115) ? 5 : 3;
-
-      // Criteria 5: Knee bend & Extension
-      let s5 = (minKneeAngle < 155 && maxElbowAngle > 145) ? 5 : (minKneeAngle < 165 ? 3 : 2);
-
-      // Criteria 6: Follow through wrist flick
-      let s6 = maxElbowAngle > 150 ? 4 : 3;
-
-      const scores = [s1, s2, s3, s4, s5, s6];
-      criteriaData.forEach((c, idx) => {
-        document.getElementById(`select-${c.id}`).value = scores[idx];
-        updateBadge(c.id, scores[idx]);
+      const finalScores = [s1, s2, s3, s4, s5, s6];
+      criteriaData.forEach((c, i) => {
+        document.getElementById(`select-${c.id}`).value = finalScores[i];
+        updateBadge(c.id, finalScores[i]);
       });
 
       recalculateTotal();
