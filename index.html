@@ -2,156 +2,148 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Netball Shooting Technique Analysis & Peer Feedback</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Netball Shooting Technique Analysis & Peer Coaching Portal</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google MediaPipe Pose Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
-  
+  <!-- SheetJS for Excel Export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <style>
-    select.correct { border: 2px solid #22c55e !important; background-color: #f0fdf4 !important; }
-    select.incorrect { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
+    select.correct { border: 2px solid #22c55e !important; background-color: #f0fdf4 !important; color: #15803d !important; font-weight: bold; }
+    select.incorrect { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; color: #b91c1c !important; }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 p-4 min-h-screen">
+<body class="bg-slate-100 text-slate-800 p-3 md:p-5 min-h-screen font-sans">
 
-  <div class="max-w-7xl mx-auto space-y-6">
+  <div class="max-w-7xl mx-auto space-y-4">
 
-    <!-- Header & Guidelines -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-5 rounded-xl shadow">
+    <!-- Header Section -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
       
-      <!-- Top-Left: Video Recording Requirements -->
-      <div class="md:col-span-1 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm space-y-2">
-        <h3 class="font-bold text-amber-900 flex items-center gap-1.5 text-base">
+      <!-- Top-Left: Filming Requirements Box -->
+      <div class="md:col-span-4 bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-1">
+        <h3 class="font-bold text-amber-900 text-xs flex items-center gap-1 mb-1">
           📹 Videoing Requirements
         </h3>
-        <ul class="space-y-1 text-amber-900 text-xs leading-relaxed">
-          <li>📐 <b>Side View:</b> Film directly from the shooter's side (90° profile).</li>
-          <li>🚶 <b>Full Body:</b> Capture whole body from head to feet throughout shot.</li>
-          <li>☀ <b>Good Lighting:</b> Ensure bright, clear contrast without strong backlighting.</li>
-          <li>📱 <b>Steady Clip:</b> Keep camera still, recording complete setup to follow-through.</li>
+        <ul class="text-[11px] text-amber-800 space-y-1 leading-tight">
+          <li>📱 <b>Portrait Mode:</b> Hold camera vertically in portrait orientation.</li>
+          <li>🚶 <b>Capture Whole Motion:</b> Record full body (feet to top release height).</li>
+          <li>☀️ <b>Bright Setting:</b> Ensure bright lighting with clear contrast.</li>
+          <li>📐 <b>90° Side Profile:</b> Stand directly to the side of the shooter.</li>
         </ul>
       </div>
 
-      <!-- Title & Student Info -->
-      <div class="md:col-span-2 flex flex-col justify-between space-y-3">
+      <!-- Student Details Header -->
+      <div class="md:col-span-8 flex flex-col justify-between space-y-3">
         <div>
-          <h1 class="text-2xl font-extrabold text-indigo-950">Netball Shooting AI Assessment & E21CC Dialogue</h1>
-          <p class="text-xs text-slate-500">Upload video to run automated biomechanical AI scoring, then review via slow-motion control.</p>
+          <h1 class="text-xl font-extrabold text-indigo-950">Netball Shooting Analysis & Peer Coaching</h1>
+          <p class="text-xs text-slate-500">Automated MediaPipe AI pose evaluation paired with interactive peer dialogue matching.</p>
         </div>
-        <div class="grid grid-cols-3 gap-3 text-xs">
+        <div class="grid grid-cols-3 gap-2 text-xs">
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">Observer Name</label>
-            <input type="text" id="observerName" class="w-full p-2 border rounded bg-slate-50" placeholder="e.g. Alex">
+            <label class="block font-semibold text-slate-600 mb-0.5">Observer Name</label>
+            <input type="text" id="observerName" class="w-full p-1.5 border rounded bg-slate-50 text-xs" placeholder="Observer">
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">Performer Name</label>
-            <input type="text" id="performerName" class="w-full p-2 border rounded bg-slate-50" placeholder="e.g. Jordan">
+            <label class="block font-semibold text-slate-600 mb-0.5">Performer Name</label>
+            <input type="text" id="performerName" class="w-full p-1.5 border rounded bg-slate-50 text-xs" placeholder="Performer">
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">Class / Group</label>
-            <input type="text" id="classGroup" class="w-full p-2 border rounded bg-slate-50" placeholder="e.g. 3 Integrity">
+            <label class="block font-semibold text-slate-600 mb-0.5">Class / Group</label>
+            <input type="text" id="classGroup" class="w-full p-1.5 border rounded bg-slate-50 text-xs" placeholder="Class">
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- Main Workspace: 2-Column Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Main Workspace (2 Columns) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-      <!-- LEFT COLUMN: Primary AI Video Upload & Secondary Slow-Mo Player -->
-      <div class="lg:col-span-6 space-y-6">
+      <!-- LEFT COLUMN: Primary AI Player + Secondary Slow-Mo Player -->
+      <div class="lg:col-span-6 space-y-4">
 
-        <!-- PRIMARY AI VIDEO SECTION -->
-        <div class="bg-white p-4 rounded-xl shadow space-y-3">
-          <h2 class="font-bold text-slate-700 text-sm flex items-center justify-between">
-            <span>1. Primary Video Upload & AI Analysis</span>
-            <span class="text-xs font-normal text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">MediaPipe Pose AI</span>
-          </h2>
+        <!-- 1. Primary AI Video Section -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+          <div class="flex justify-between items-center">
+            <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider">1. Primary Video Upload & AI Analysis</h2>
+            <span id="aiStatus" class="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">Ready</span>
+          </div>
 
-          <!-- Upload Input -->
-          <input type="file" id="primaryVideoInput" accept="video/*" class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg p-1"/>
+          <input type="file" id="aiVideoInput" accept="video/*" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 border border-slate-200 rounded p-1"/>
 
-          <!-- Primary Video Container with Overlay Canvas -->
           <div class="relative bg-black rounded-lg overflow-hidden aspect-video flex items-center justify-center">
-            <video id="aiVideo" class="w-full h-full object-contain" playsinline preload="metadata"></video>
+            <video id="aiVideo" class="w-full h-full object-contain" playsinline crossorigin="anonymous"></video>
             <canvas id="poseCanvas" class="absolute top-0 left-0 w-full h-full pointer-events-none"></canvas>
-            <div id="uploadPrompt" class="absolute text-slate-400 text-xs text-center p-4">
-              Select a netball shooting video above to load
+            <div id="aiPlaceholder" class="absolute text-slate-400 text-xs text-center p-4">
+              Upload a netball shooting video above to initialize AI pose analysis
             </div>
           </div>
 
-          <!-- BUTTON RIGHT BELOW THE VIDEO -->
-          <button id="runAiBtn" onclick="executeAiAnalysis()" class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-lg shadow transition flex items-center justify-center gap-2">
+          <!-- Button directly below primary video -->
+          <button id="runAiBtn" onclick="runPoseAnalysis()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded shadow-sm transition flex items-center justify-center gap-1.5">
             <span>▶</span> Run AI Analysis
           </button>
         </div>
 
-        <!-- SECONDARY SLOW-MOTION REVIEW SECTION -->
-        <div class="bg-white p-4 rounded-xl shadow space-y-3">
-          <div class="flex items-center justify-between border-b pb-2">
-            <h2 class="font-bold text-slate-700 text-sm flex items-center gap-1.5">
-              <span>🔍 2. Manual Inspection & Slow-Motion Control</span>
-            </h2>
-            <span class="text-xs text-slate-400">For observer re-verification</span>
+        <!-- 2. Secondary Slow-Motion Inspection Player -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+          <div class="flex justify-between items-center border-b pb-2">
+            <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider">2. Manual Inspection & Slow-Motion Control</h2>
+            <span class="text-[10px] text-slate-400">Scrubbing & Speed Control</span>
           </div>
 
-          <!-- Secondary Video Upload (Optional re-upload or mirrored) -->
-          <div class="flex items-center gap-2">
-            <input type="file" id="slowMoVideoInput" accept="video/*" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 border border-slate-200 rounded p-1"/>
-          </div>
+          <input type="file" id="manualVideoInput" accept="video/*" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 border border-slate-200 rounded p-1"/>
 
-          <!-- Secondary Video Element -->
           <div class="relative bg-black rounded-lg overflow-hidden aspect-video flex items-center justify-center">
-            <video id="inspectionVideo" controls class="w-full h-full object-contain" playsinline></video>
+            <video id="manualVideo" controls class="w-full h-full object-contain" playsinline></video>
           </div>
 
-          <!-- Playback Speed Controls -->
-          <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-2">
-            <div class="text-xs font-semibold text-slate-600">Playback Speed Control:</div>
+          <!-- Speed Controls -->
+          <div class="bg-slate-50 p-2.5 rounded border border-slate-200 space-y-2">
+            <div class="text-[11px] font-semibold text-slate-600">Playback Speed Control:</div>
             <div class="grid grid-cols-4 gap-1.5">
-              <button onclick="setPlaybackSpeed(0.25)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-xs font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300">0.25x (Slow)</button>
-              <button onclick="setPlaybackSpeed(0.5)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-xs font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300">0.50x (Half)</button>
-              <button onclick="setPlaybackSpeed(0.75)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-xs font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300">0.75x</button>
-              <button onclick="setPlaybackSpeed(1.0)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-xs font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300">1.00x (Normal)</button>
+              <button onclick="setSpeed(0.25)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-[11px] font-medium text-slate-700">0.25x</button>
+              <button onclick="setSpeed(0.5)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-[11px] font-medium text-slate-700">0.50x</button>
+              <button onclick="setSpeed(0.75)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-[11px] font-medium text-slate-700">0.75x</button>
+              <button onclick="setSpeed(1.0)" class="py-1 bg-white hover:bg-indigo-50 border rounded text-[11px] font-medium text-slate-700">1.00x</button>
             </div>
-            
-            <!-- Frame By Frame Step Controls -->
             <div class="flex gap-2 pt-1">
-              <button onclick="stepFrame(-0.05)" class="flex-1 py-1 bg-slate-200 hover:bg-slate-300 rounded text-xs text-slate-700 font-medium">⏪ Step Back (-0.05s)</button>
-              <button onclick="stepFrame(0.05)" class="flex-1 py-1 bg-slate-200 hover:bg-slate-300 rounded text-xs text-slate-700 font-medium">Step Forward (+0.05s) ⏩</button>
+              <button onclick="stepTime(-0.05)" class="flex-1 py-1 bg-slate-200 hover:bg-slate-300 rounded text-[11px] text-slate-700 font-medium">⏪ Step -0.05s</button>
+              <button onclick="stepTime(0.05)" class="flex-1 py-1 bg-slate-200 hover:bg-slate-300 rounded text-[11px] text-slate-700 font-medium">Step +0.05s ⏩</button>
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- RIGHT COLUMN: Dynamic Scoring Criteria & E21CC Peer Dialogue -->
-      <div class="lg:col-span-6 space-y-6">
-        
-        <!-- Checklist & Automated Scores -->
-        <div class="bg-white p-4 rounded-xl shadow space-y-4">
+      <!-- RIGHT COLUMN: Assessment Rubric & E21CC Interactive Matching Dialogue -->
+      <div class="lg:col-span-6 space-y-4">
+
+        <!-- 3. Technical Assessment Rubric Table -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
           <div class="flex justify-between items-center border-b pb-2">
-            <h2 class="font-bold text-slate-800 text-sm">3. Biomechanical Rubric Scoring (1 - 5)</h2>
+            <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider">3. Biomechanical Rubric Scoring (1 - 5)</h2>
             <div class="text-right">
               <span class="text-xs text-slate-500">Total Score:</span>
-              <span id="totalScoreDisplay" class="text-base font-extrabold text-indigo-700 ml-1">0 / 30</span>
+              <span id="totalScoreDisplay" class="text-sm font-extrabold text-indigo-700 ml-1">18 / 30</span>
             </div>
           </div>
 
-          <!-- Scoring Items Container -->
-          <div id="criteriaContainer" class="space-y-3">
-            <!-- Dynamic Criteria Items rendered via JavaScript -->
+          <div id="criteriaContainer" class="space-y-2">
+            <!-- Dynamic Rubric Row Items -->
           </div>
         </div>
 
-        <!-- STEP 4: Interactive Peer Dialogue & Impact Matching -->
-        <div class="bg-white p-4 rounded-xl shadow space-y-4">
+        <!-- 4. Interactive Peer Dialogue & Impact Matching -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
           <div class="border-b pb-2">
-            <h2 class="font-bold text-slate-800 text-sm">4. Interactive Peer Dialogue & Impact Matching</h2>
+            <h2 class="font-bold text-slate-800 text-xs uppercase tracking-wider">4. Interactive Peer Dialogue & Impact Matching</h2>
             <p class="text-xs text-slate-500">Match 2 Strengths and 2 Areas for Improvement with their corresponding technical impacts.</p>
           </div>
 
@@ -178,7 +170,7 @@
             </div>
           </div>
 
-          <!-- Areas for Improvement Section (Updated to 2 Items) -->
+          <!-- Areas for Improvement Section (2 Items) -->
           <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
             <h3 class="font-semibold text-xs text-amber-800">🟠 Areas for Improvement (Choose 2)</h3>
             
@@ -212,7 +204,7 @@
             <p id="coachingMessageText" class="whitespace-pre-line text-xs text-slate-700 leading-relaxed"></p>
           </div>
 
-          <!-- STEP 5: Performer Response -->
+          <!-- 5. Performer Dialogue Response -->
           <div class="pt-4 border-t space-y-3">
             <h3 class="font-bold text-slate-800 text-xs">5. Performer Dialogue Response (Performer → Observer)</h3>
             
@@ -240,6 +232,9 @@
             </div>
           </div>
 
+          <button onclick="exportExcel()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded shadow-sm transition flex items-center justify-center gap-1.5">
+            📊 Export Analysis to Excel
+          </button>
         </div>
 
       </div>
@@ -249,34 +244,34 @@
   </div>
 
   <script>
-    // Scoring Criteria Definition
+    // 6 Technical Netball Assessment Criteria
     const criteriaData = [
-      { id: 'c1', title: '1. Preparation Phase: Feet Shoulder-Width Apart', desc: 'Balanced base with feet facing goal post.' },
-      { id: 'c2', title: '2. Preparation Phase: Ball Held High Above Head', desc: 'Slight flex at elbows, ball poised above forehead/head.' },
-      { id: 'c3', title: '3. Execution Phase: Shooting Elbow Under Ball', desc: 'Shooting elbow aligned pointed towards target (~90° flex).' },
-      { id: 'c4', title: '4. Execution Phase: Simultaneous Leg Dip & Extension', desc: 'Knees bend smoothly to generate force into extension.' },
-      { id: 'c5', title: '5. Release Phase: Full Arm Extension High', desc: 'High release point with shooting arm fully extended.' },
-      { id: 'c6', title: '6. Follow-Through: Crisp Wrist Flick & Gooseneck', desc: 'Fingers pointing towards target with soft wrist drop.' }
+      { id: 'c1', title: '1. Feet shoulder width apart', desc: 'Balanced stance facing target.' },
+      { id: 'c2', title: '2. Non-shooting hand on side & shooting hand under ball', desc: 'Stability and control of ball.' },
+      { id: 'c3', title: '3. Fingers open, ball resting high above head', desc: 'High resting point for clear line of sight.' },
+      { id: 'c4', title: '4. Shooting arm elbow at right angle pointing to net', desc: 'Optimal elbow position for directional accuracy.' },
+      { id: 'c5', title: '5. Bend knees and straighten arm when shooting', desc: 'Force production through legs and arm extension.' },
+      { id: 'c6', title: '6. Flick wrist on follow through', desc: 'Creates backspin to improve accuracy.' }
     ];
 
     // Skill & Impact Pairings Database
     const skillImpactPairs = [
-      { skill: "Feet shoulder width apart", impact: "Balanced stance" },
-      { skill: "Non-shooting hand on side & shooting hand under ball", impact: "Stability" },
-      { skill: "Fingers open, ball resting high above head", impact: "Better aim" },
-      { skill: "Shooting arm elbow at right angle pointing to net", impact: "Maximizes shooting accuracy" },
-      { skill: "Bend knees and straighten arm when shooting", impact: "Maximizes power" },
-      { skill: "Flick wrist on follow through", impact: "Creates backspin to improve accuracy" }
+      { skill: "Feet shoulder width apart", impact: "balanced stance" },
+      { skill: "Non-shooting hand on side & shooting hand under ball", impact: "stability" },
+      { skill: "Fingers open, ball resting high above head", impact: "better aim" },
+      { skill: "Shooting arm elbow at right angle pointing to net", impact: "maximizes shooting accuracy" },
+      { skill: "Bend knees and straighten arm when shooting", impact: "maximizes power" },
+      { skill: "Flick wrist on follow through", impact: "creates backspin to improve accuracy" }
     ];
 
     // Initialize UI Rubric Criteria
     function renderCriteria() {
       const container = document.getElementById('criteriaContainer');
       container.innerHTML = criteriaData.map(item => `
-        <div class="p-3 bg-slate-50 border rounded-lg flex items-center justify-between gap-3" id="card-${item.id}">
+        <div class="p-2.5 bg-slate-50 border rounded-lg flex items-center justify-between gap-3" id="card-${item.id}">
           <div class="space-y-0.5">
             <div class="font-semibold text-xs text-slate-800">${item.title}</div>
-            <div class="text-[11px] text-slate-500">${item.desc}</div>
+            <div class="text-[10px] text-slate-500">${item.desc}</div>
           </div>
           <div class="flex items-center gap-2">
             <span id="badge-${item.id}" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-600">Pending</span>
@@ -292,7 +287,7 @@
       `).join('');
     }
 
-    // Populate Matching Dropdowns
+    // Populate Matching Dropdowns (Scrambled Order for Cognitive Match)
     function populateDropdowns() {
       const prefixes = ['s1', 's2', 'i1', 'i2'];
       prefixes.forEach(prefix => {
@@ -302,8 +297,14 @@
         skillSel.innerHTML = '<option value="">-- Select Skill --</option>';
         impactSel.innerHTML = '<option value="">-- Select Impact --</option>';
 
-        skillImpactPairs.forEach(pair => {
+        // Shuffle skills and impacts independently
+        const shuffledSkills = [...skillImpactPairs].sort(() => Math.random() - 0.5);
+        const shuffledImpacts = [...skillImpactPairs].sort(() => Math.random() - 0.5);
+
+        shuffledSkills.forEach(pair => {
           skillSel.innerHTML += `<option value="${pair.skill}">${pair.skill}</option>`;
+        });
+        shuffledImpacts.forEach(pair => {
           impactSel.innerHTML += `<option value="${pair.impact}">${pair.impact}</option>`;
         });
       });
@@ -362,31 +363,34 @@
 
       const feedbackMsg = 
         `"Great effort on your shooting technique! I noticed two key strengths during your execution:\n` +
-        `1. You maintained '${s1_skill}', which gave you a ${s1_impact.toLowerCase()}.\n` +
-        `2. You also performed '${s2_skill}', which helped with your ${s2_impact.toLowerCase()}.\n\n` +
+        `1. You maintained '${s1_skill}', which provided ${s1_impact}.\n` +
+        `2. You also executed '${s2_skill}', which helped with your ${s2_impact}.\n\n` +
         `To help increase your shooting consistency, here are two areas we can work on together:\n` +
-        `1. Try to focus on '${i1_skill}' as this will achieve ${i1_impact.toLowerCase()}.\n` +
-        `2. Focus on '${i2_skill}', which will result in ${i2_impact.toLowerCase()}.\n\n` +
+        `1. Try to focus on '${i1_skill}' as this will achieve ${i1_impact}.\n` +
+        `2. Focus on '${i2_skill}', which will result in ${i2_impact}.\n\n` +
         `How did the execution feel to you, and what are your thoughts on these suggestions?"`;
 
       document.getElementById('coachingMessageText').innerText = feedbackMsg;
       document.getElementById('observerFeedbackOutput').style.display = 'block';
     }
 
-    // Sync Uploads
-    const primaryInput = document.getElementById('primaryVideoInput');
-    const slowMoInput = document.getElementById('slowMoVideoInput');
+    // Video Elements & Auto-Reset Logic
+    const primaryInput = document.getElementById('aiVideoInput');
+    const slowMoInput = document.getElementById('manualVideoInput');
     const aiVideo = document.getElementById('aiVideo');
     const inspectionVideo = document.getElementById('inspectionVideo');
-    const uploadPrompt = document.getElementById('uploadPrompt');
+    const uploadPrompt = document.getElementById('aiPlaceholder');
+    const aiStatus = document.getElementById('aiStatus');
 
     primaryInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
+        resetAnalysisState();
         const url = URL.createObjectURL(file);
         aiVideo.src = url;
         inspectionVideo.src = url;
         uploadPrompt.style.display = 'none';
+        aiStatus.textContent = 'Video Loaded';
       }
     });
 
@@ -397,28 +401,177 @@
       }
     });
 
+    function resetAnalysisState() {
+      // Reset rubric scores to 3
+      criteriaData.forEach(item => {
+        document.getElementById(`select-${item.id}`).value = 3;
+        updateBadge(item.id, 3);
+      });
+      recalculateTotal();
+
+      // Reset matching dropdowns
+      const prefixes = ['s1', 's2', 'i1', 'i2'];
+      prefixes.forEach(prefix => {
+        document.getElementById(`${prefix}_skill`).value = "";
+        document.getElementById(`${prefix}_impact`).value = "";
+        document.getElementById(`${prefix}_skill`).className = "w-1/2 p-1.5 border rounded text-xs bg-white";
+        document.getElementById(`${prefix}_impact`).className = "w-1/2 p-1.5 border rounded text-xs bg-white";
+      });
+      document.getElementById('btnGenerateFeedback').disabled = true;
+      document.getElementById('observerFeedbackOutput').style.display = 'none';
+      aiStatus.textContent = 'Ready';
+    }
+
     // Speed Controls
-    function setPlaybackSpeed(speed) {
+    function setSpeed(speed) {
       inspectionVideo.playbackRate = speed;
     }
 
-    function stepFrame(timeOffset) {
+    function stepTime(timeOffset) {
       inspectionVideo.pause();
       inspectionVideo.currentTime = Math.max(0, Math.min(inspectionVideo.duration, inspectionVideo.currentTime + timeOffset));
     }
 
-    // AI Analysis Runner
-    function executeAiAnalysis() {
+    // MediaPipe Pose Detector Setup
+    let poseEngine = null;
+    let landmarkFrames = [];
+
+    function setupMediaPipe() {
+      if (poseEngine) return;
+      poseEngine = new Pose({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+      });
+      poseEngine.setOptions({
+        modelComplexity: 1,
+        smoothLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+      poseEngine.onResults(onPoseResults);
+    }
+
+    const poseCanvas = document.getElementById('poseCanvas');
+    const canvasCtx = poseCanvas.getContext('2d');
+
+    function onPoseResults(results) {
+      poseCanvas.width = aiVideo.videoWidth || 640;
+      poseCanvas.height = aiVideo.videoHeight || 360;
+      canvasCtx.save();
+      canvasCtx.clearRect(0, 0, poseCanvas.width, poseCanvas.height);
+
+      if (results.poseLandmarks) {
+        landmarkFrames.push(results.poseLandmarks);
+        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#00FF00', lineWidth: 2 });
+        drawLandmarks(canvasCtx, results.poseLandmarks, { color: '#FF0000', lineWidth: 1, radius: 3 });
+      }
+      canvasCtx.restore();
+    }
+
+    function calculateAngle(a, b, c) {
+      const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
+      let angle = Math.abs((radians * 180.0) / Math.PI);
+      if (angle > 180.0) angle = 360 - angle;
+      return angle;
+    }
+
+    // Deterministic AI Analysis Runner
+    async function runPoseAnalysis() {
       if (!aiVideo.src) {
         alert("Please upload a video clip first!");
         return;
       }
 
-      criteriaData.forEach(item => {
-        const randomScore = Math.floor(Math.random() * 3) + 3; // 3 to 5
-        const select = document.getElementById(`select-${item.id}`);
-        select.value = randomScore;
-        updateBadge(item.id, randomScore);
+      setupMediaPipe();
+      landmarkFrames = [];
+      aiStatus.textContent = 'Scanning AI Frames...';
+
+      // Frame sampling across the video duration
+      aiVideo.currentTime = 0;
+      const duration = aiVideo.duration || 3;
+      const step = Math.max(0.1, duration / 25);
+
+      while (aiVideo.currentTime < duration) {
+        await poseEngine.send({ image: aiVideo });
+        aiVideo.currentTime += step;
+        await new Promise(r => setTimeout(r, 30));
+      }
+
+      evaluatePoseLandmarks();
+      aiStatus.textContent = 'Analysis Complete';
+    }
+
+    // Calculate Scores Based on MediaPipe Biomechanical Thresholds
+    function evaluatePoseLandmarks() {
+      if (landmarkFrames.length === 0) {
+        recalculateTotal();
+        return;
+      }
+
+      let minKneeAngle = 180;
+      let maxElbowAngle = 0;
+      let minElbowAngle = 180;
+      let maxWristYDiff = 0;
+      let wristHighFrames = 0;
+      let totalAnkleShoulderRatios = 0;
+
+      landmarkFrames.forEach(lm => {
+        // Knee Dip (Hip 24, Knee 26, Ankle 28)
+        if (lm[24] && lm[26] && lm[28]) {
+          const kAngle = calculateAngle(lm[24], lm[26], lm[28]);
+          if (kAngle < minKneeAngle) minKneeAngle = kAngle;
+        }
+
+        // Elbow Alignment & Extension (Shoulder 12, Elbow 14, Wrist 16)
+        if (lm[12] && lm[14] && lm[16]) {
+          const eAngle = calculateAngle(lm[12], lm[14], lm[16]);
+          if (eAngle > maxElbowAngle) maxElbowAngle = eAngle;
+          if (eAngle < minElbowAngle) minElbowAngle = eAngle;
+        }
+
+        // Wrist Height above Nose (Wrist 16, Nose 0)
+        if (lm[16] && lm[0]) {
+          if (lm[16].y < lm[0].y) wristHighFrames++;
+        }
+
+        // Non-shooting hand vs shooting hand height diff (15 vs 16)
+        if (lm[15] && lm[16]) {
+          const diff = Math.abs(lm[15].y - lm[16].y);
+          if (diff > maxWristYDiff) maxWristYDiff = diff;
+        }
+
+        // Feet Shoulder Width (Ankles 27/28 vs Shoulders 11/12)
+        if (lm[27] && lm[28] && lm[11] && lm[12]) {
+          const ankleW = Math.abs(lm[27].x - lm[28].x);
+          const shoulderW = Math.abs(lm[11].x - lm[12].x);
+          if (shoulderW > 0) totalAnkleShoulderRatios += (ankleW / shoulderW);
+        }
+      });
+
+      const avgAnkleRatio = totalAnkleShoulderRatios / landmarkFrames.length;
+
+      // Deterministic Scoring Calculations (Scale 1–5)
+      // Criteria 1: Feet stance ratio
+      let s1 = (avgAnkleRatio >= 0.75 && avgAnkleRatio <= 1.35) ? 5 : (avgAnkleRatio >= 0.5 ? 3 : 2);
+      
+      // Criteria 2: Non-shooting hand support
+      let s2 = maxWristYDiff > 0.08 ? 4 : 2;
+
+      // Criteria 3: Ball resting high
+      let s3 = wristHighFrames > 3 ? 5 : 2;
+
+      // Criteria 4: Shooting arm elbow angle
+      let s4 = (minElbowAngle >= 70 && minElbowAngle <= 115) ? 5 : 3;
+
+      // Criteria 5: Knee bend & Extension
+      let s5 = (minKneeAngle < 155 && maxElbowAngle > 145) ? 5 : (minKneeAngle < 165 ? 3 : 2);
+
+      // Criteria 6: Follow through wrist flick
+      let s6 = maxElbowAngle > 150 ? 4 : 3;
+
+      const scores = [s1, s2, s3, s4, s5, s6];
+      criteriaData.forEach((c, idx) => {
+        document.getElementById(`select-${c.id}`).value = scores[idx];
+        updateBadge(c.id, scores[idx]);
       });
 
       recalculateTotal();
@@ -446,6 +599,38 @@
         updateBadge(item.id, val);
       });
       document.getElementById('totalScoreDisplay').textContent = `${total} / 30`;
+    }
+
+    function exportExcel() {
+      const observer = document.getElementById('observerName').value || 'N/A';
+      const performer = document.getElementById('performerName').value || 'N/A';
+      const classGrp = document.getElementById('classGroup').value || 'N/A';
+
+      const rowData = [
+        ["Netball Shooting Analysis Summary"],
+        ["Observer", observer, "Performer", performer, "Class", classGrp],
+        [],
+        ["Criteria", "Score (1-5)"]
+      ];
+
+      criteriaData.forEach(c => {
+        const val = document.getElementById(`select-${c.id}`).value;
+        rowData.push([c.title, val]);
+      });
+
+      rowData.push([]);
+      rowData.push(["Matched Strength 1", document.getElementById('s1_skill').value, "Impact 1", document.getElementById('s1_impact').value]);
+      rowData.push(["Matched Strength 2", document.getElementById('s2_skill').value, "Impact 2", document.getElementById('s2_impact').value]);
+      rowData.push(["Matched Improvement 1", document.getElementById('i1_skill').value, "Impact 1", document.getElementById('i1_impact').value]);
+      rowData.push(["Matched Improvement 2", document.getElementById('i2_skill').value, "Impact 2", document.getElementById('i2_impact').value]);
+      rowData.push([]);
+      rowData.push(["Performer Agreement Level", document.getElementById('performerAgreement').value]);
+      rowData.push(["Performer Comments / Reflection", document.getElementById('performerComments').value]);
+
+      const ws = XLSX.utils.aoa_to_sheet(rowData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Netball_Analysis");
+      XLSX.writeFile(wb, `Netball_Analysis_${performer}.xlsx`);
     }
 
     window.onload = function() {
